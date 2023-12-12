@@ -1,6 +1,6 @@
 {
 	"name": "root-folder-context-menu",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Enables context menu for vault root folder",
 	"main": "main.js",
 	"scripts": {
