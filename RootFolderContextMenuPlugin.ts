@@ -6,7 +6,6 @@ import {
 } from "types";
 
 export default class RootFolderContextMenu extends Plugin {
-    removeFileExporerViewPatch!: () => void;
     fileExplorerPlugin!: Plugin;
 
     public onload(): void {
@@ -26,10 +25,12 @@ export default class RootFolderContextMenu extends Plugin {
 
             const view = fileExplorerLeaf.view;
 
-            this.removeFileExporerViewPatch = around(Object.getPrototypeOf(view), {
+            const removeFileExporerViewPatch = around(Object.getPrototypeOf(view), {
                 openFileContextMenu: this.applyOpenFileContextMenuPatch
             });
 
+            this.register(removeFileExporerViewPatch);
+            this.register(this.reloadFileExplorer);
             this.reloadFileExplorer();
         });
     }
@@ -47,11 +48,6 @@ export default class RootFolderContextMenu extends Plugin {
             originalMethod.call(this, event, fileItemElement);
             file.isRoot = () => true;
         };
-    }
-
-    public onunload(): void {
-        this.removeFileExporerViewPatch();
-        this.reloadFileExplorer();
     }
 
     private reloadFileExplorer() {
