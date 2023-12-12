@@ -10,26 +10,28 @@ export default class RootFolderContextMenu extends Plugin {
     fileExplorerPlugin!: Plugin;
 
     public onload(): void {
-        const FILE_EXPLORER_PLUGIN_ID = "file-explorer";
-        this.fileExplorerPlugin = this.app.internalPlugins.getPluginById(FILE_EXPLORER_PLUGIN_ID);
+        this.app.workspace.onLayoutReady(() => {
+            const FILE_EXPLORER_PLUGIN_ID = "file-explorer";
+            this.fileExplorerPlugin = this.app.internalPlugins.getPluginById(FILE_EXPLORER_PLUGIN_ID);
 
-        if (!this.fileExplorerPlugin) {
-          throw new Error("File Explorer plugin is disabled")
-        }
+            if (!this.fileExplorerPlugin) {
+              throw new Error("File Explorer plugin is disabled")
+            }
+
+            const fileExplorerLeaf = this.app.workspace.getLeavesOfType(FILE_EXPLORER_PLUGIN_ID)[0];
     
-        const fileExplorerLeaf = this.app.workspace.getLeavesOfType(FILE_EXPLORER_PLUGIN_ID)[0];
+            if (!fileExplorerLeaf) {
+                throw new Error("File Explorer pane is not visible");
+            }
 
-        if (!fileExplorerLeaf) {
-            throw new Error("File Explorer pane is not visible");
-        }
+            const view = fileExplorerLeaf.view;
 
-        const view = fileExplorerLeaf.view;
+            this.removeFileExporerViewPatch = around(Object.getPrototypeOf(view), {
+                openFileContextMenu: this.applyOpenFileContextMenuPatch
+            });
 
-        this.removeFileExporerViewPatch = around(Object.getPrototypeOf(view), {
-            openFileContextMenu: this.applyOpenFileContextMenuPatch
+            this.reloadFileExplorer();
         });
-
-        this.reloadFileExplorer();
     }
 
     private applyOpenFileContextMenuPatch(originalMethod: OpenFileContextMenuFunc): OpenFileContextMenuFunc {
