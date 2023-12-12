@@ -38,22 +38,14 @@ export default class RootFolderContextMenu extends Plugin {
         return function (this: FileExplorerView, event: Event, fileItemElement: HTMLElement): void {
             const file = this.files.get(fileItemElement.parentElement);
 
-            if (!(file instanceof TFolder)) {
+            if (!(file instanceof TFolder) || !file.isRoot()) {
                 originalMethod.call(this, event, fileItemElement);
                 return;
             }
 
-            const isRoot = file.isRoot();
-
-            if (isRoot) {
-                file.isRoot = () => false;
-            }
-
+            file.isRoot = () => false;
             originalMethod.call(this, event, fileItemElement);
-
-            if (isRoot) {
-                file.isRoot = () => true;
-            }
+            file.isRoot = () => true;
         };
     }
 
