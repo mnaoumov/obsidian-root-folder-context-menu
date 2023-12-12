@@ -1,4 +1,4 @@
-import { Plugin } from "obsidian";
+import { Plugin, TFile, TFolder } from "obsidian";
 import { around } from "monkey-around";
 import {
     FileExplorerView,
@@ -36,15 +36,20 @@ export default class RootFolderContextMenu extends Plugin {
         return function (this: FileExplorerView, event: Event, fileItemElement: HTMLElement): void {
             const file = this.files.get(fileItemElement.parentElement);
 
-            const isRoot = file?.isRoot();
+            if (!(file instanceof TFolder)) {
+                originalMethod.call(this, event, fileItemElement);
+                return;
+            }
 
-            if (isRoot && file) {
+            const isRoot = file.isRoot();
+
+            if (isRoot) {
                 file.isRoot = () => false;
             }
 
             originalMethod.call(this, event, fileItemElement);
 
-            if (isRoot && file) {
+            if (isRoot) {
                 file.isRoot = () => true;
             }
         };
