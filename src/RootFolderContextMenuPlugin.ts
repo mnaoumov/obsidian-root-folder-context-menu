@@ -7,35 +7,40 @@ import {
   FileExplorerView,
   OpenFileContextMenuFunc
 } from "./types";
+import type { FileExplorerPlugin } from "obsidian-typings";
 
 export default class RootFolderContextMenu extends Plugin {
-  private fileExplorerPlugin!: Plugin;
+  private fileExplorerPlugin!: FileExplorerPlugin;
 
   public onload(): void {
-    this.app.workspace.onLayoutReady(() => {
-      const FILE_EXPLORER_PLUGIN_ID = "file-explorer";
-      this.fileExplorerPlugin = this.app.internalPlugins.getPluginById(FILE_EXPLORER_PLUGIN_ID);
+    this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
+  }
 
-      if (!this.fileExplorerPlugin) {
-        throw new Error("File Explorer plugin is disabled");
-      }
+  private onLayoutReady(): void {
+    const FILE_EXPLORER_PLUGIN_ID = "file-explorer";
+    const fileExplorerPlugin = this.app.internalPlugins.getEnabledPluginById(FILE_EXPLORER_PLUGIN_ID);
 
-      const fileExplorerLeaf = this.app.workspace.getLeavesOfType(FILE_EXPLORER_PLUGIN_ID)[0];
+    if (!fileExplorerPlugin) {
+      throw new Error("File Explorer plugin is disabled");
+    }
 
-      if (!fileExplorerLeaf) {
-        throw new Error("File Explorer pane is not visible");
-      }
+    this.fileExplorerPlugin = fileExplorerPlugin;
 
-      const view = fileExplorerLeaf.view;
+    const fileExplorerLeaf = this.app.workspace.getLeavesOfType(FILE_EXPLORER_PLUGIN_ID)[0];
 
-      const removeFileExporerViewPatch = around(Object.getPrototypeOf(view), {
-        openFileContextMenu: this.applyOpenFileContextMenuPatch
-      });
+    if (!fileExplorerLeaf) {
+      throw new Error("File Explorer pane is not visible");
+    }
 
-      this.register(removeFileExporerViewPatch);
-      this.register(this.reloadFileExplorer);
-      this.reloadFileExplorer();
+    const view = fileExplorerLeaf.view;
+
+    const removeFileExplorerViewPatch = around(Object.getPrototypeOf(view), {
+      openFileContextMenu: this.applyOpenFileContextMenuPatch
     });
+
+    this.register(removeFileExplorerViewPatch);
+    this.register(this.reloadFileExplorer);
+    this.reloadFileExplorer();
   }
 
   private applyOpenFileContextMenuPatch(originalMethod: OpenFileContextMenuFunc): OpenFileContextMenuFunc {
