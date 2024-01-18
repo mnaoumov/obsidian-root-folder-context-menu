@@ -1,6 +1,6 @@
 {
   "name": "root-folder-context-menu",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Enables context menu for vault root folder",
   "scripts": {
     "build": "tsx esbuild.config.ts production",
