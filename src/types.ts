@@ -1,7 +1,20 @@
-import { TAbstractFile } from "obsidian";
+import {
+  TAbstractFile,
+  View,
+  WorkspaceLeaf
+} from "obsidian";
 
-export interface FileExplorerView {
-  files: Map<HTMLElement | null, TAbstractFile>
+// TODO: Remove when PR https://github.com/Fevol/obsidian-typings/pull/26 is accepted
+export interface FileExplorerLeaf extends WorkspaceLeaf {
+  view: FileExplorerView;
 }
 
-export type OpenFileContextMenuFunc = (this: FileExplorerView, event: Event, fileItemElement: HTMLElement) => void;
+export interface FileExplorerView extends View {
+  files: WeakMapWrapper<HTMLElement, TAbstractFile>;
+
+  openFileContextMenu(event: Event, fileItemElement: HTMLElement): void;
+}
+
+interface WeakMapWrapper<K extends WeakKey, V> extends WeakMap<K, V> {
+  map: WeakMap<K, V>;
+}
