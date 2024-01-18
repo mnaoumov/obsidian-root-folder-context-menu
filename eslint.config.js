@@ -11,13 +11,16 @@ import "eslint-import-resolver-typescript";
 export default [
   {
     files: ["**/*.ts", "**/*.js"],
-    ignores: ["dist/**"],
+    ignores: ["dist/**", "eslint.config.js"],
     languageOptions: {
       parser: typescriptEslintParser,
       sourceType: "module",
       globals: {
         ...globals.browser,
         ...globals.node
+      },
+      parserOptions: {
+        project: "./tsconfig.json"
       }
     },
     plugins: {
@@ -29,6 +32,7 @@ export default [
     rules: {
       ...typescriptEslintPlugin.configs["eslint-recommended"].overrides[0].rules,
       ...typescriptEslintPlugin.configs["recommended"].rules,
+      ...typescriptEslintPlugin.configs["recommended-type-checked"].rules,
       ...eslintConfigPrettier.rules,
       "import/no-unresolved": "error",
       "import/no-namespace": "error",
