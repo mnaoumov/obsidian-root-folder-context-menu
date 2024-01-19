@@ -18,7 +18,7 @@ const configs: Linter.FlatConfig[] = [
     files: ["**/*.ts"],
     ignores: ["dist/**"],
     languageOptions: {
-      parser: typescriptEslintParser as unknown as Linter.ParserModule,
+      parser: typescriptEslintParser as Linter.ParserModule,
       sourceType: "module",
       globals: {
         ...globals.browser,
