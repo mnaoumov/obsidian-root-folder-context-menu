@@ -3,10 +3,10 @@ import {
   TFolder
 } from "obsidian";
 import { around } from "monkey-around";
-import {
+import type {
   FileExplorerLeaf,
   FileExplorerView,
-} from "./types.ts";
+} from "./types.d.ts";
 import type { FileExplorerPlugin } from "obsidian-typings";
 
 export default class RootFolderContextMenu extends Plugin {
