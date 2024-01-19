@@ -12,7 +12,7 @@ import type { FileExplorerPlugin } from "obsidian-typings";
 export default class RootFolderContextMenu extends Plugin {
   private fileExplorerPlugin!: FileExplorerPlugin;
 
-  public onload(): void {
+  public override onload(): void {
     this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
   }
 
