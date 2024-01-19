@@ -15,7 +15,7 @@
       "ES6",
       "ES7"
     ],
-    "module": "ESNext",
+    "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "noEmit": true,
     "noImplicitAny": true,
