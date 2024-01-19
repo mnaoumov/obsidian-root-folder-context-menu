@@ -3,8 +3,8 @@
   "version": "1.0.3",
   "description": "Enables context menu for vault root folder",
   "scripts": {
-    "build": "tsc --build & tsx esbuild.config.ts production",
-    "dev": "tsc --build & tsx esbuild.config.ts",
+    "build": "tsc --build && tsx esbuild.config.ts production",
+    "dev": "tsc --build && tsx esbuild.config.ts",
     "lint": "eslint . --fix",
     "version": "tsx version-bump.ts && git add manifest.json package.json versions.json"
   },
