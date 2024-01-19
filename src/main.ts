@@ -1,1 +1,1 @@
-export { default } from "./RootFolderContextMenuPlugin";
+export { default } from "./RootFolderContextMenuPlugin.ts";
