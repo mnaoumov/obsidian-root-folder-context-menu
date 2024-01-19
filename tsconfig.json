@@ -1,4 +1,5 @@
 {
+  "extends": "@tsconfig/strictest/tsconfig.json",
   "compilerOptions": {
     "allowImportingTsExtensions": true,
     "allowJs": true,
@@ -8,7 +9,6 @@
     "importHelpers": true,
     "inlineSourceMap": true,
     "inlineSources": true,
-    "isolatedModules": true,
     "lib": [
       "DOM",
       "ES5",
@@ -18,10 +18,6 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "noEmit": true,
-    "noImplicitAny": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "strictNullChecks": true,
     "target": "ESNext",
   },
   "include": [
