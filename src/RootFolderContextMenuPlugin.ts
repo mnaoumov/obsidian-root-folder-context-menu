@@ -6,7 +6,7 @@ import { around } from "monkey-around";
 import {
   FileExplorerLeaf,
   FileExplorerView,
-} from "./types";
+} from "./types.ts";
 import type { FileExplorerPlugin } from "obsidian-typings";
 
 export default class RootFolderContextMenu extends Plugin {
