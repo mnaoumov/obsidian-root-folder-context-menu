@@ -11,7 +11,7 @@ interface Manifest {
 
 interface Versions extends Record<string, string> {}
 
-const targetVersion = process.env.npm_package_version;
+const targetVersion = process.env["npm_package_version"];
 
 if (!targetVersion) {
   throw new Error("package.json version is not set");

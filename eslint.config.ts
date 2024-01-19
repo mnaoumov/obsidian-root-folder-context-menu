@@ -35,9 +35,9 @@ const configs: Linter.FlatConfig[] = [
       "@stylistic": stylisticEslintPlugin as ESLint.Plugin
     },
     rules: {
-      ...typescriptEslintPlugin.configs["eslint-recommended"].overrides[0].rules,
-      ...typescriptEslintPlugin.configs["recommended"].rules,
-      ...typescriptEslintPlugin.configs["recommended-type-checked"].rules,
+      ...typescriptEslintPlugin.configs["eslint-recommended"]!.overrides[0]!.rules,
+      ...typescriptEslintPlugin.configs["recommended"]!.rules,
+      ...typescriptEslintPlugin.configs["recommended-type-checked"]!.rules,
       "import/no-unresolved": "error",
       "import/no-namespace": "error",
       "modules-newlines/import-declaration-newline": "error",
