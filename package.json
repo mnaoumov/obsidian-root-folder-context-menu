@@ -13,6 +13,7 @@
   "license": "MIT",
   "devDependencies": {
     "@stylistic/eslint-plugin": "latest",
+    "@types/eslint": "latest",
     "@types/node": "latest",
     "@types/obsidian-typings": "github:Fevol/obsidian-typings",
     "@typescript-eslint/eslint-plugin": "latest",
@@ -24,6 +25,7 @@
     "eslint-import-resolver-typescript": "latest",
     "eslint-plugin-import": "latest",
     "eslint-plugin-modules-newlines": "latest",
+    "eslint-ts-patch": "latest",
     "globals": "latest",
     "obsidian": "latest",
     "tsx": "latest"
