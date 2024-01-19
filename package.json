@@ -6,7 +6,7 @@
     "build": "tsc --build & tsx esbuild.config.ts production",
     "dev": "tsc --build & tsx esbuild.config.ts",
     "lint": "eslint . --fix",
-    "version": "tsx version-bump.ts && git add manifest.json versions.json"
+    "version": "tsx version-bump.ts && git add manifest.json package.json versions.json"
   },
   "keywords": [],
   "author": "mnaoumov",
