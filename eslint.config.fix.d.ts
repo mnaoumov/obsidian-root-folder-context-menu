@@ -1,12 +1,3 @@
-declare module "@typescript-eslint/parser" {
-  import type {
-    Linter
-  } from "eslint";
-
-  const parserModule: Linter.ParserModule;
-  export const parserModule;
-}
-
 declare module "@typescript-eslint/eslint-plugin" {
   import type {
     ESLint,
