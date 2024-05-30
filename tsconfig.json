@@ -17,6 +17,9 @@
     "moduleResolution": "NodeNext",
     "noEmit": true,
     "target": "ESNext",
+    "types": [
+      "obsidian-typings"
+    ]
   },
   "include": [
     "**/*.ts"

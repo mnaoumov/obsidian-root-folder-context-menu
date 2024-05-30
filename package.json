@@ -16,7 +16,6 @@
     "@tsconfig/strictest": "latest",
     "@types/eslint": "latest",
     "@types/node": "latest",
-    "@types/obsidian-typings": "github:Fevol/obsidian-typings",
     "@typescript-eslint/eslint-plugin": "latest",
     "@typescript-eslint/parser": "latest",
     "builtin-modules": "latest",
@@ -27,6 +26,7 @@
     "eslint-plugin-modules-newlines": "latest",
     "globals": "latest",
     "obsidian": "latest",
+    "obsidian-typings": "latest",
     "tsx": "latest"
   },
   "type": "module",
