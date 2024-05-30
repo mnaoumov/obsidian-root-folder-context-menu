@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc --build && tsx esbuild.config.ts production",
     "dev": "tsc --build && tsx esbuild.config.ts",
-    "lint": "eslint . --fix",
+    "lint": "tsc --target ESNext --module NodeNext --moduleResolution NodeNext eslint.config.ts eslint.config.fix.d.ts && eslint . --fix",
     "version": "tsx version-bump.ts && git add manifest.json package.json versions.json"
   },
   "keywords": [],
@@ -25,7 +25,6 @@
     "eslint-import-resolver-typescript": "latest",
     "eslint-plugin-import": "latest",
     "eslint-plugin-modules-newlines": "latest",
-    "eslint-ts-patch": "latest",
     "globals": "latest",
     "obsidian": "latest",
     "tsx": "latest"
