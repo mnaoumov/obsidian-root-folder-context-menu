@@ -1,8 +1,5 @@
-// eslint-disable-next-line import/no-namespace
-import * as typescriptEslintParser from "@typescript-eslint/parser";
-// eslint-disable-next-line import/no-namespace
-import * as eslintPluginImport from "eslint-plugin-import";
-
+import typescriptEslintParser from "@typescript-eslint/parser";
+import eslintPluginImport from "eslint-plugin-import";
 import typescriptEslintPlugin from "@typescript-eslint/eslint-plugin";
 import stylisticEslintPlugin from "@stylistic/eslint-plugin";
 import eslintPluginModulesNewlines from "eslint-plugin-modules-newlines";
