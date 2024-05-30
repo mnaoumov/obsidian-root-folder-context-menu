@@ -1,3 +1,12 @@
+declare module "@stylistic/eslint-plugin" {
+  import type {
+    ESLint
+  } from "eslint";
+
+  const plugin: ESLint.Plugin;
+  export default plugin;
+}
+
 declare module "@typescript-eslint/eslint-plugin" {
   import type {
     ESLint,
@@ -13,6 +22,15 @@ declare module "@typescript-eslint/eslint-plugin" {
     configs: Record<string, Config>
   };
   export default plugin;
+}
+
+declare module "@typescript-eslint/parser" {
+  import type {
+    Linter
+  } from "eslint";
+
+  const parser: Linter.ParserModule;
+  export default parser;
 }
 
 declare module "eslint-plugin-import" {
