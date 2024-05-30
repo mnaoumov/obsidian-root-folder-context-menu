@@ -5,12 +5,12 @@ import {
 import { around } from "monkey-around";
 import type {
   FileExplorerLeaf,
-  FileExplorerView,
-} from "./types.d.ts";
-import type { FileExplorerPlugin } from "obsidian-typings";
+  InternalPlugin,
+  FileExplorerView
+} from "obsidian-typings";
 
 export default class RootFolderContextMenu extends Plugin {
-  private fileExplorerPlugin!: FileExplorerPlugin;
+  private fileExplorerPlugin!: InternalPlugin;
 
   public override onload(): void {
     this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
@@ -18,13 +18,13 @@ export default class RootFolderContextMenu extends Plugin {
 
   private onLayoutReady(): void {
     const FILE_EXPLORER_PLUGIN_ID = "file-explorer";
-    const fileExplorerPlugin = this.app.internalPlugins.getEnabledPluginById(FILE_EXPLORER_PLUGIN_ID);
+    const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(FILE_EXPLORER_PLUGIN_ID);
 
-    if (!fileExplorerPlugin) {
+    if (!fileExplorerPluginInstance) {
       throw new Error("File Explorer plugin is disabled");
     }
 
-    this.fileExplorerPlugin = fileExplorerPlugin;
+    this.fileExplorerPlugin = fileExplorerPluginInstance.plugin;
 
     const fileExplorerLeaf = this.app.workspace.getLeavesOfType(FILE_EXPLORER_PLUGIN_ID)[0] as FileExplorerLeaf;
 
