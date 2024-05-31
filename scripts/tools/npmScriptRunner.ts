@@ -6,7 +6,7 @@ interface ScriptModule {
   isLongRunning?: boolean;
 }
 
-export default async function runNpmScript(scriptName: string): Promise<void> {
+export default async function runNpmScript(scriptName: string): Promise<boolean> {
   if (!scriptName) {
     throw new Error("Script name is not provided");
   }
@@ -34,9 +34,7 @@ export default async function runNpmScript(scriptName: string): Promise<void> {
   try {
     console.log(`Executing script ${scriptName}`);
     await scriptFn();
-    if (!scriptModule.isLongRunning) {
-      process.exit(0);
-    }
+    return scriptModule.isLongRunning ?? false;
   } catch (e) {
     throw new Error(`Script ${scriptName} failed`, { cause: e });
   }

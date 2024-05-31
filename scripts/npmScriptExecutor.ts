@@ -4,7 +4,10 @@ import runNpmScript from "./tools/npmScriptRunner.ts";
 const scriptName = process.argv[2] || "";
 
 try {
-  await runNpmScript(scriptName);
+  const isLongRunning = await runNpmScript(scriptName);
+  if (!isLongRunning) {
+    process.exit(0);
+  }
 } catch (e) {
   printError(e);
   process.exit(1);
