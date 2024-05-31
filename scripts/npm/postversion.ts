@@ -1,11 +1,11 @@
 import process from "process";
+import { execFromRoot } from "scripts/tools/root.ts";
 
 export default function postversion(): void {
+  execFromRoot("git push");
+  execFromRoot("git push --tags");
+
   const newVersion = process.env["npm_package_version"];
 
-  if (!newVersion) {
-    throw new Error("package.json version is not set");
-  }
-
-  throw new Error(newVersion);
+  execFromRoot(`gh release create "v${newVersion}" --title "v${newVersion}" --notes "Release of version ${newVersion}`);
 }
