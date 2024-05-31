@@ -6,7 +6,8 @@ import {
   cp,
   mkdir,
   readFile,
-  rm
+  rm,
+  writeFile
 } from "fs/promises";
 
 interface NpmPackage {
@@ -42,7 +43,7 @@ if you want to view the source, please visit the github repository of this plugi
 
   const distFileNames = ["manifest.json", "styles.css"];
   if (!isProductionBuild) {
-    distFileNames.push(".hotreload");
+    await writeFile(`${distDir}/.hotreload`, "", "utf-8");
   }
 
   for (const fileName of distFileNames) {
