@@ -16,7 +16,7 @@ export function execFromRoot(command: string): void {
 }
 
 export async function tsImportFromRoot<T>(specifier: string): Promise<T> {
-  return await tsImport(specifier, rootUrl);
+  return await tsImport(specifier, rootUrl) as T;
 }
 
 export function resolvePathFromRoot(path: string): string {

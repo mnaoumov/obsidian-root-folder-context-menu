@@ -22,10 +22,10 @@ function printError(error: unknown, level: number = 0): void {
 
     if (error === null) {
       str = "(null)";
-    } else if (typeof error === "object") {
-      str = JSON.stringify(error);
+    } else if (typeof error === "string") {
+      str = error;
     } else {
-      str = error.toString();
+      str = JSON.stringify(error);
     }
 
     console.error(`${indent}${str}`);

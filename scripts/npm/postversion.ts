@@ -1,6 +1,6 @@
 import process from "process";
 
-export default async function postversion(): Promise<void> {
+export default function postversion(): void {
   const newVersion = process.env["npm_package_version"];
 
   if (!newVersion) {
