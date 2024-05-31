@@ -37,8 +37,5 @@
   },
   "engines": {
     "node": ">=20.6.0"
-  },
-  "publishConfig": {
-    "tag-version-prefix": "release-"
   }
 }
