@@ -5,6 +5,7 @@ const scriptName = process.argv[2] || "";
 
 try {
   await runNpmScript(scriptName);
+  process.exit(0);
 } catch (e) {
   printError(e);
   process.exit(1);
