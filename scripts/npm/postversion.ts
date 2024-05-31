@@ -1,5 +1,6 @@
 import { readdir } from "fs/promises";
 import process from "process";
+import runNpmScript from "../tools/npmScriptRunner.ts";
 import {
   execFromRoot,
   resolvePathFromRoot
@@ -8,6 +9,8 @@ import {
 export default async function postversion(): Promise<void> {
   execFromRoot("git push");
   execFromRoot("git push --tags");
+
+  await runNpmScript("build");
 
   const newVersion = process.env["npm_package_version"];
 
