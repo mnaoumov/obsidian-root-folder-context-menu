@@ -6,6 +6,8 @@
     "build": "tsx scripts/runNpmScript.ts build",
     "dev": "tsx scripts/runNpmScript.ts dev",
     "lint": "tsx scripts/runNpmScript.ts lint",
+    "postversion": "tsx scripts/runNpmScript.ts postversion",
+    "preversion": "tsx scripts/runNpmScript.ts preversion",
     "version": "tsx scripts/runNpmScript.ts version"
   },
   "keywords": [],
