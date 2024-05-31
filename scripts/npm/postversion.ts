@@ -1,5 +1,8 @@
 import process from "process";
-import { execFromRoot } from "scripts/tools/root.ts";
+import {
+  execFromRoot,
+  resolvePathFromRoot
+} from "scripts/tools/root.ts";
 
 export default function postversion(): void {
   execFromRoot("git push");
@@ -7,5 +10,6 @@ export default function postversion(): void {
 
   const newVersion = process.env["npm_package_version"];
 
-  execFromRoot(`gh release create "v${newVersion}" --title "v${newVersion}" --notes "Release of version ${newVersion}`);
+  const buildDir = resolvePathFromRoot("dist/build");
+  execFromRoot(`gh release create "${newVersion}" "${buildDir}/*" --title "v${newVersion}" --generate-notes`);
 }
