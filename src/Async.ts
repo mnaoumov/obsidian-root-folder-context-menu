@@ -16,7 +16,7 @@ export async function runWithTimeout<R>(timeoutInMilliseconds: number, asyncFn: 
   }
 }
 
-export async function retryWithTimeout(asyncFn: () => Promise<boolean>, options = {
+export async function retryWithTimeout(asyncFn: () => boolean | Promise<boolean>, options = {
   timeoutInMilliseconds: TIMEOUT_IN_MILLISECONDS,
   retryDelayInMilliseconds: RETRY_DELAY_IN_MILLISECONDS
 }): Promise<void> {
@@ -28,7 +28,7 @@ export async function retryWithTimeout(asyncFn: () => Promise<boolean>, options 
       }
 
       console.debug(`Retry completed unsuccessfully. Trying again in ${options.retryDelayInMilliseconds} milliseconds`);
-      delay(options.retryDelayInMilliseconds);
+      await delay(options.retryDelayInMilliseconds);
     }
   });
 }
