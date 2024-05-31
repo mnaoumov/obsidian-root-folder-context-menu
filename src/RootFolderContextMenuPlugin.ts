@@ -42,7 +42,9 @@ export default class RootFolderContextMenu extends Plugin {
     const vaultSwitcherEl = document.querySelector(".workspace-drawer-vault-switcher") as HTMLElement | undefined;
     if (vaultSwitcherEl) {
       view.files.set(vaultSwitcherEl, this.app.vault.getRoot());
-      this.registerDomEvent(vaultSwitcherEl, "contextmenu", (ev: MouseEvent): void => {
+      this.registerDomEvent(vaultSwitcherEl, "contextmenu", async (ev: MouseEvent): Promise<void> => {
+        await delay(100);
+        document.body.click();
         view.openFileContextMenu(ev, vaultSwitcherEl.childNodes[0] as HTMLElement);
       });
     }
