@@ -3,12 +3,12 @@
   "version": "1.0.3",
   "description": "Enables context menu for vault root folder",
   "scripts": {
-    "build": "tsx scripts/runNpmScript.ts build",
-    "dev": "tsx scripts/runNpmScript.ts dev",
-    "lint": "tsx scripts/runNpmScript.ts lint",
-    "postversion": "tsx scripts/runNpmScript.ts postversion",
-    "preversion": "tsx scripts/runNpmScript.ts preversion",
-    "version": "tsx scripts/runNpmScript.ts version"
+    "build": "tsx scripts/npmScriptExecutor.ts build",
+    "dev": "tsx scripts/npmScriptExecutor.ts dev",
+    "lint": "tsx scripts/npmScriptExecutor.ts lint",
+    "postversion": "tsx scripts/npmScriptExecutor.ts postversion",
+    "preversion": "tsx scripts/npmScriptExecutor.ts preversion",
+    "version": "tsx scripts/npmScriptExecutor.ts version"
   },
   "keywords": [],
   "author": "mnaoumov",
