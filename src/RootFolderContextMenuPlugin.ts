@@ -81,7 +81,7 @@ export default class RootFolderContextMenu extends Plugin {
 
   private async initFileExplorerView(): Promise<void> {
     try {
-      await retryWithTimeout(async () => {
+      await retryWithTimeout((): boolean => {
         const fileExplorerLeaf = this.app.workspace.getLeavesOfType(FILE_EXPLORER_PLUGIN_ID)[0] as FileExplorerLeaf;
 
         if (fileExplorerLeaf) {
