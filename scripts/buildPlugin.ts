@@ -106,7 +106,6 @@ if you want to view the source, please visit the github repository of this plugi
 
   if (isProductionBuild) {
     await context.rebuild();
-    process.exit(0);
   } else {
     await context.watch();
   }
