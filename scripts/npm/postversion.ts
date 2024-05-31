@@ -16,5 +16,5 @@ export default async function postversion(): Promise<void> {
   const filePaths = fileNames.map(fileName => `${buildDir}/${fileName}`);
   const filePathsStr = filePaths.map(filePath => `"${filePath}"`).join(" ");
 
-  execFromRoot(`gh release create "${newVersion}" ${filePathsStr} --title "v${newVersion}" --generate-notes`);
+  execFromRoot(`npx gh release create "${newVersion}" ${filePathsStr} --title "v${newVersion}" --generate-notes`);
 }
