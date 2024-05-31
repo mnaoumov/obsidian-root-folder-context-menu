@@ -3,10 +3,10 @@
   "version": "1.0.3",
   "description": "Enables context menu for vault root folder",
   "scripts": {
-    "build": "tsc --build && tsx esbuild.config.ts production",
-    "dev": "tsc --build && tsx esbuild.config.ts",
-    "lint": "eslint . --fix",
-    "version": "tsx version-bump.ts && git add manifest.json package.json versions.json"
+    "build": "tsx scripts/runNpmScript.ts build",
+    "dev": "tsx scripts/runNpmScript.ts dev",
+    "lint": "tsx scripts/runNpmScript.ts lint",
+    "version": "tsx scripts/runNpmScript.ts version"
   },
   "keywords": [],
   "author": "mnaoumov",
