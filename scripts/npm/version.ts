@@ -1,4 +1,7 @@
-import { execFromRoot, resolvePathFromRoot } from "../tools/root.ts";
+import {
+  execFromRoot,
+  resolvePathFromRoot
+} from "../tools/root.ts";
 
 import {
   readFile,
