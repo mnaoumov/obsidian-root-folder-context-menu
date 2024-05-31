@@ -3,6 +3,7 @@ import { tsImportFromRoot } from "./root.ts";
 
 interface ScriptModule {
   default: () => Promise<void>;
+  isLongRunning?: boolean;
 }
 
 export default async function runNpmScript(scriptName: string): Promise<void> {
@@ -33,6 +34,9 @@ export default async function runNpmScript(scriptName: string): Promise<void> {
   try {
     console.log(`Executing script ${scriptName}`);
     await scriptFn();
+    if (!scriptModule.isLongRunning) {
+      process.exit(0);
+    }
   } catch (e) {
     throw new Error(`Script ${scriptName} failed`, { cause: e });
   }
