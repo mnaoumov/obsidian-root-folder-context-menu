@@ -4,15 +4,15 @@ import {
 } from "obsidian";
 import { around } from "monkey-around";
 import type {
-  FileExplorerLeaf,
   InternalPlugin,
   FileExplorerView
-} from "obsidian-typings";
+} from "obsidian";
 import {
   delay,
   RETRY_DELAY_IN_MILLISECONDS,
   retryWithTimeout,
 } from "./Async.ts";
+import { getPrototypeOf } from "./Object.ts";
 
 const FILE_EXPLORER_PLUGIN_ID = "file-explorer";
 
@@ -34,7 +34,7 @@ export default class RootFolderContextMenu extends Plugin {
     this.fileExplorerPlugin = fileExplorerPluginInstance.plugin;
     await this.initFileExplorerView();
 
-    const viewPrototype = Object.getPrototypeOf(this.fileExplorerView) as FileExplorerView;
+    const viewPrototype = getPrototypeOf(this.fileExplorerView);
 
     const removeFileExplorerViewPatch = around(viewPrototype, {
       openFileContextMenu: this.applyOpenFileContextMenuPatch.bind(this),
@@ -44,7 +44,7 @@ export default class RootFolderContextMenu extends Plugin {
     this.register(this.reloadFileExplorer.bind(this));
     await this.reloadFileExplorer();
 
-    const vaultSwitcherEl = document.querySelector(".workspace-drawer-vault-switcher") as HTMLElement | undefined;
+    const vaultSwitcherEl = document.querySelector<HTMLElement>(".workspace-drawer-vault-switcher");
     if (vaultSwitcherEl) {
       this.fileExplorerView.files.set(vaultSwitcherEl, this.app.vault.getRoot());
       this.registerDomEvent(vaultSwitcherEl, "contextmenu", async (ev: MouseEvent): Promise<void> => {
@@ -82,7 +82,7 @@ export default class RootFolderContextMenu extends Plugin {
   private async initFileExplorerView(): Promise<void> {
     try {
       await retryWithTimeout((): boolean => {
-        const fileExplorerLeaf = this.app.workspace.getLeavesOfType(FILE_EXPLORER_PLUGIN_ID)[0] as FileExplorerLeaf;
+        const fileExplorerLeaf = this.app.workspace.getLeavesOfType(FILE_EXPLORER_PLUGIN_ID)[0];
 
         if (fileExplorerLeaf) {
           console.debug("FileExplorerLeaf is initialized");
