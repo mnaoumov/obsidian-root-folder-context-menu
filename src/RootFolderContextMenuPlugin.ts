@@ -13,13 +13,7 @@ import {
   retryWithTimeout,
 } from "./Async.ts";
 import { getPrototypeOf } from "./Object.ts";
-
-/**
- * @see comment in {@link file://./types.d.ts}
- */
-import {} from "obsidian-typings";
-
-const FILE_EXPLORER_PLUGIN_ID = "file-explorer";
+import { InternalPluginName } from "obsidian-typings";
 
 export default class RootFolderContextMenu extends Plugin {
   private fileExplorerPlugin!: InternalPlugin;
@@ -30,7 +24,7 @@ export default class RootFolderContextMenu extends Plugin {
   }
 
   private async onLayoutReady(): Promise<void> {
-    const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(FILE_EXPLORER_PLUGIN_ID);
+    const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(InternalPluginName.FileExplorer);
 
     if (!fileExplorerPluginInstance) {
       throw new Error("File Explorer plugin is disabled");
@@ -87,7 +81,7 @@ export default class RootFolderContextMenu extends Plugin {
   private async initFileExplorerView(): Promise<void> {
     try {
       await retryWithTimeout((): boolean => {
-        const fileExplorerLeaf = this.app.workspace.getLeavesOfType(FILE_EXPLORER_PLUGIN_ID)[0];
+        const fileExplorerLeaf = this.app.workspace.getLeavesOfType(InternalPluginName.FileExplorer)[0];
 
         if (fileExplorerLeaf) {
           console.debug("FileExplorerLeaf is initialized");
