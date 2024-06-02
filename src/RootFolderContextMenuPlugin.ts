@@ -14,6 +14,11 @@ import {
 } from "./Async.ts";
 import { getPrototypeOf } from "./Object.ts";
 
+/**
+ * @see comment in {@link file://./types.d.ts}
+ */
+import {} from "obsidian-typings";
+
 const FILE_EXPLORER_PLUGIN_ID = "file-explorer";
 
 export default class RootFolderContextMenu extends Plugin {
