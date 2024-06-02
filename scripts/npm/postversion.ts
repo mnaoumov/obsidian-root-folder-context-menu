@@ -1,5 +1,5 @@
-import { readdir } from "fs/promises";
-import process from "process";
+import { readdir } from "node:fs/promises";
+import process from "node:process";
 import runNpmScript from "../tools/npmScriptRunner.ts";
 import {
   execFromRoot,

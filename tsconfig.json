@@ -18,6 +18,7 @@
     "noEmit": true,
     "target": "ESNext",
     "types": [
+      "node",
       "obsidian-typings"
     ]
   },

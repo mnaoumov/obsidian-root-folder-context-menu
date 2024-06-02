@@ -1,4 +1,4 @@
-import process from "process";
+import process from "node:process";
 import runNpmScript from "./tools/npmScriptRunner.ts";
 
 const scriptName = process.argv[2] || "";
