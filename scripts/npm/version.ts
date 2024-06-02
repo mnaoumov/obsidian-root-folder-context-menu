@@ -6,9 +6,9 @@ import {
 import {
   readFile,
   writeFile
-} from "fs/promises";
+} from "node:fs/promises";
 
-import process from "process";
+import process from "node:process";
 
 interface Manifest {
   minAppVersion: string;

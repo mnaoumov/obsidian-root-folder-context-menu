@@ -1,9 +1,9 @@
-import { execSync } from "child_process";
+import { execSync } from "node:child_process";
 import {
   resolve,
-} from "path";
+} from "node:path";
 import { tsImport } from "tsx/esm/api";
-import { fileURLToPath } from "url";
+import { fileURLToPath } from "node:url";
 
 export const rootUrl = new URL("../../", import.meta.url).href;
 export const rootDir = fileURLToPath(rootUrl);

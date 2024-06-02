@@ -1,14 +1,14 @@
 import esbuild from "esbuild";
-import process from "process";
+import process from "node:process";
 import builtins from "builtin-modules";
-import { existsSync } from "fs";
+import { existsSync } from "node:fs";
 import {
   cp,
   mkdir,
   readFile,
   rm,
   writeFile
-} from "fs/promises";
+} from "node:fs/promises";
 
 interface NpmPackage {
   name: string;
