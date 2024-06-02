@@ -1,4 +1,5 @@
 import {
+  Notice,
   Plugin,
   TFolder
 } from "obsidian";
@@ -27,7 +28,8 @@ export default class RootFolderContextMenu extends Plugin {
     const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(InternalPluginName.FileExplorer);
 
     if (!fileExplorerPluginInstance) {
-      throw new Error("File Explorer plugin is disabled");
+      await this.disablePlugin("File Explorer plugin is disabled. Disabling the plugin...");
+      return;
     }
 
     this.fileExplorerPlugin = fileExplorerPluginInstance.plugin;
@@ -93,8 +95,14 @@ export default class RootFolderContextMenu extends Plugin {
         return false;
       });
     } catch (e) {
-      console.error("Could not initialize FileExplorerView. Disabling the plugin...", e);
-      await this.app.plugins.disablePlugin(this.manifest.id);
+      console.error(e);
+      await this.disablePlugin("Could not initialize FileExplorerView. Disabling the plugin...");
     }
+  }
+
+  private async disablePlugin(message: string): Promise<void> {
+    console.error(message);
+    new Notice(message);
+    await this.app.plugins.disablePlugin(this.manifest.id);
   }
 }
