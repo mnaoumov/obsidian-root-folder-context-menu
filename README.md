@@ -2,9 +2,9 @@
 
 This is a plugin for [Obsidian](https://obsidian.md/) that enables context menu for vault root folder
 
-By default, `Obsidian` doesn't show the context menu when you right-click on the vault title on the top of the `Files` pane.
+By default, `Obsidian` doesn't show the context menu when you right-click on the vault title or anywhere in the root follder ("/") area.
 
-This plugins removes this limitation, so all folder context actions such as `New note` can be invoked.
+This plugins removes this limitation, so all folder context actions such as `New note` can be invoked
 
 ## Installation
 
