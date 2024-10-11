@@ -25,18 +25,29 @@ declare module "obsidian" {
   export class Workspace {
     public onLayoutReady(callback: () => void): void;
     public getLeavesOfType(type: string): WorkspaceLeaf[];
+    public getLeaf(create?: boolean): WorkspaceLeaf;
   }
 
   export class Vault {
     public getRoot(): TFolder;
+    public create(path: string, data: string): Promise<TFile>;
+    public createFolder(path: string): Promise<void>;
+    public adapter: {
+      exists(path: string): Promise<boolean>;
+    };
   }
 
   export class TFolder {
     public isRoot(): boolean;
   }
 
+  export class TFile {
+    public path: string;
+  }
+
   export class WorkspaceLeaf {
     public view: View;
+    public openFile(file: TFile): Promise<void>;
   }
 
   export class View {}

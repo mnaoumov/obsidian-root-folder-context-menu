@@ -1,108 +1,100 @@
 import {
-  Notice,
+  App,
   Plugin,
-  TFolder
+  PluginManifest,
+  Menu,
+  MenuItem,
+  TFile
 } from "obsidian";
-import { around } from "monkey-around";
-import type {
-  InternalPlugin,
-  FileExplorerView
-} from "obsidian";
-import {
-  delay,
-  RETRY_DELAY_IN_MILLISECONDS,
-  retryWithTimeout,
-} from "./Async.ts";
-import { getPrototypeOf } from "./Object.ts";
-import { InternalPluginName } from "obsidian-typings";
 
 export default class RootFolderContextMenu extends Plugin {
-  private fileExplorerPlugin!: InternalPlugin;
-  private fileExplorerView!: FileExplorerView;
+  public constructor(app: App, manifest: PluginManifest) {
+    super(app, manifest);
+  }
 
   public override onload(): void {
+    super.onload();
     this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
   }
 
-  private async onLayoutReady(): Promise<void> {
-    const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(InternalPluginName.FileExplorer);
+  private onLayoutReady(): void {
+    this.addContextMenu();
+  }
 
-    if (!fileExplorerPluginInstance) {
-      await this.disablePlugin("File Explorer plugin is disabled. Disabling the plugin...");
-      return;
-    }
+  private addContextMenu(): void {
+    const navFilesContainer = document.querySelector(".nav-files-container");
+    if (navFilesContainer instanceof HTMLElement) {
+      this.registerDomEvent(navFilesContainer, "contextmenu", (event: Event) => {
+        // Prevent the default context menu
+        event.preventDefault();
 
-    this.fileExplorerPlugin = fileExplorerPluginInstance.plugin;
-    await this.initFileExplorerView();
+        // Create a new menu
+        const menu = new Menu(this.app);
 
-    const viewPrototype = getPrototypeOf(this.fileExplorerView);
+        // Add menu items
+        menu.addItem((item: MenuItem) => {
+          item
+            .setTitle("New note in root")
+            .setIcon("create-new")
+            .onClick(async () => {
+              await this.createNewFileInRoot();
+            });
+        });
 
-    const removeFileExplorerViewPatch = around(viewPrototype, {
-      openFileContextMenu: this.applyOpenFileContextMenuPatch.bind(this),
-    });
+        menu.addItem((item: MenuItem) => {
+          item
+            .setTitle("New folder in root")
+            .setIcon("folder")
+            .onClick(async () => {
+              await this.createNewFolderInRoot();
+            });
+        });
 
-    this.register(removeFileExplorerViewPatch);
-    this.register(this.reloadFileExplorer.bind(this));
-    await this.reloadFileExplorer();
-
-    const vaultSwitcherEl = document.querySelector<HTMLElement>(".workspace-drawer-vault-switcher");
-    if (vaultSwitcherEl) {
-      this.fileExplorerView.files.set(vaultSwitcherEl, this.app.vault.getRoot());
-      this.registerDomEvent(vaultSwitcherEl, "contextmenu", async (ev: MouseEvent): Promise<void> => {
-        await delay(RETRY_DELAY_IN_MILLISECONDS);
-        document.body.click();
-        this.fileExplorerView.openFileContextMenu(ev, vaultSwitcherEl.childNodes[0] as HTMLElement);
+        // Show the menu
+        menu.showAtMouseEvent(event as MouseEvent);
       });
+    } else {
+      console.error("Nav files container not found");
     }
   }
 
-  private applyOpenFileContextMenuPatch(next: FileExplorerView["openFileContextMenu"]): FileExplorerView["openFileContextMenu"] {
-    return function (this: FileExplorerView, event: Event, fileItemElement: HTMLElement): void {
-      const file = this.files.get(fileItemElement.parentElement!);
+  private async createNewFileInRoot(): Promise<void> {
+    const fileName = "Untitled";
+    let fileNumber = 1;
+    let filePath = `/${fileName}.md`;
 
-      if (!(file instanceof TFolder) || !file.isRoot()) {
-        next.call(this, event, fileItemElement);
-        return;
-      }
+    while (await this.app.vault.adapter.exists(filePath)) {
+      filePath = `/${fileName} ${fileNumber}.md`;
+      fileNumber++;
+    }
 
-      file.isRoot = (): boolean => false;
-      next.call(this, event, fileItemElement);
-      file.isRoot = (): boolean => true;
-    };
-  }
-
-  private async reloadFileExplorer(): Promise<void> {
-    console.log("Disabling File Explorer plugin");
-    this.fileExplorerPlugin.disable();
-
-    console.log("Enabling File Explorer plugin");
-    await this.fileExplorerPlugin.enable();
-    await this.initFileExplorerView();
-  }
-
-  private async initFileExplorerView(): Promise<void> {
     try {
-      await retryWithTimeout((): boolean => {
-        const fileExplorerLeaf = this.app.workspace.getLeavesOfType(InternalPluginName.FileExplorer)[0];
-
-        if (fileExplorerLeaf) {
-          console.debug("FileExplorerLeaf is initialized");
-          this.fileExplorerView = fileExplorerLeaf.view;
-          return true;
+      const file = await this.app.vault.create(filePath, "");
+      if (file instanceof TFile) {
+        const leaf = this.app.workspace.getLeaf();
+        if (leaf) {
+          await leaf.openFile(file);
         }
-
-        console.debug("FileExplorerLeaf is not initialized yet. Repeating...");
-        return false;
-      });
-    } catch (e) {
-      console.error(e);
-      await this.disablePlugin("Could not initialize FileExplorerView. Disabling the plugin...");
+      }
+    } catch (error) {
+      console.error("Error creating new file:", error);
     }
   }
 
-  private async disablePlugin(message: string): Promise<void> {
-    console.error(message);
-    new Notice(message);
-    await this.app.plugins.disablePlugin(this.manifest.id);
+  private async createNewFolderInRoot(): Promise<void> {
+    const folderName = "New Folder";
+    let folderNumber = 1;
+    let folderPath = `/${folderName}`;
+
+    while (await this.app.vault.adapter.exists(folderPath)) {
+      folderPath = `/${folderName} ${folderNumber}`;
+      folderNumber++;
+    }
+
+    try {
+      await this.app.vault.createFolder(folderPath);
+    } catch (error) {
+      console.error("Error creating new folder:", error);
+    }
   }
 }
