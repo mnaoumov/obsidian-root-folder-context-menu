@@ -1,34 +1,40 @@
+import { around } from 'monkey-around';
 import {
   Notice,
-  Plugin,
+  PluginSettingTab,
   TFolder
-} from "obsidian";
-import { around } from "monkey-around";
+} from 'obsidian';
+import type { MaybePromise } from 'obsidian-dev-utils/Async';
+import { retryWithTimeout } from 'obsidian-dev-utils/Async';
+import { getPrototypeOf } from 'obsidian-dev-utils/Object';
+import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
 import type {
-  InternalPlugin,
+  FileExplorerPlugin,
   FileExplorerView
-} from "obsidian";
-import {
-  delay,
-  RETRY_DELAY_IN_MILLISECONDS,
-  retryWithTimeout,
-} from "./Async.ts";
-import { getPrototypeOf } from "./Object.ts";
-import { InternalPluginName } from "obsidian-typings";
+} from 'obsidian-typings';
+import { InternalPluginName } from 'obsidian-typings/implementations';
 
-export default class RootFolderContextMenu extends Plugin {
-  private fileExplorerPlugin!: InternalPlugin;
-  private fileExplorerView!: FileExplorerView;
-
-  public override onload(): void {
-    this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
+export default class RootFolderContextMenu extends PluginBase<object> {
+  protected override onloadComplete(): MaybePromise<void> {
+    throw new Error('Method not implemented.');
   }
 
-  private async onLayoutReady(): Promise<void> {
+  private fileExplorerPlugin!: FileExplorerPlugin;
+  private fileExplorerView!: FileExplorerView;
+
+  protected override createDefaultPluginSettings(): object {
+    return {};
+  }
+
+  protected override createPluginSettingsTab(): PluginSettingTab | null {
+    return null;
+  }
+
+  protected override async onLayoutReady(): Promise<void> {
     const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(InternalPluginName.FileExplorer);
 
     if (!fileExplorerPluginInstance) {
-      await this.disablePlugin("File Explorer plugin is disabled. Disabling the plugin...");
+      await this.disablePlugin('File Explorer plugin is disabled. Disabling the plugin...');
       return;
     }
 
@@ -38,27 +44,31 @@ export default class RootFolderContextMenu extends Plugin {
     const viewPrototype = getPrototypeOf(this.fileExplorerView);
 
     const removeFileExplorerViewPatch = around(viewPrototype, {
-      openFileContextMenu: this.applyOpenFileContextMenuPatch.bind(this),
+      openFileContextMenu: this.applyOpenFileContextMenuPatch.bind(this)
     });
 
     this.register(removeFileExplorerViewPatch);
     this.register(this.reloadFileExplorer.bind(this));
     await this.reloadFileExplorer();
 
-    const vaultSwitcherEl = document.querySelector<HTMLElement>(".workspace-drawer-vault-switcher");
+    const vaultSwitcherEl = document.querySelector<HTMLElement>('.workspace-drawer-vault-switcher');
     if (vaultSwitcherEl) {
       this.fileExplorerView.files.set(vaultSwitcherEl, this.app.vault.getRoot());
-      this.registerDomEvent(vaultSwitcherEl, "contextmenu", async (ev: MouseEvent): Promise<void> => {
-        await delay(RETRY_DELAY_IN_MILLISECONDS);
+      this.registerDomEvent(vaultSwitcherEl, 'contextmenu', async (ev: MouseEvent): Promise<void> => {
+        const RETRY_DELAY_IN_MILLISECONDS = 100;
+        await sleep(RETRY_DELAY_IN_MILLISECONDS);
         document.body.click();
         this.fileExplorerView.openFileContextMenu(ev, vaultSwitcherEl.childNodes[0] as HTMLElement);
       });
     }
   }
 
-  private applyOpenFileContextMenuPatch(next: FileExplorerView["openFileContextMenu"]): FileExplorerView["openFileContextMenu"] {
+  private applyOpenFileContextMenuPatch(next: FileExplorerView['openFileContextMenu']): FileExplorerView['openFileContextMenu'] {
     return function (this: FileExplorerView, event: Event, fileItemElement: HTMLElement): void {
-      const file = this.files.get(fileItemElement.parentElement!);
+      if (!fileItemElement.parentElement) {
+        return;
+      }
+      const file = this.files.get(fileItemElement.parentElement);
 
       if (!(file instanceof TFolder) || !file.isRoot()) {
         next.call(this, event, fileItemElement);
@@ -72,10 +82,10 @@ export default class RootFolderContextMenu extends Plugin {
   }
 
   private async reloadFileExplorer(): Promise<void> {
-    console.log("Disabling File Explorer plugin");
+    console.log('Disabling File Explorer plugin');
     this.fileExplorerPlugin.disable();
 
-    console.log("Enabling File Explorer plugin");
+    console.log('Enabling File Explorer plugin');
     await this.fileExplorerPlugin.enable();
     await this.initFileExplorerView();
   }
@@ -86,17 +96,17 @@ export default class RootFolderContextMenu extends Plugin {
         const fileExplorerLeaf = this.app.workspace.getLeavesOfType(InternalPluginName.FileExplorer)[0];
 
         if (fileExplorerLeaf) {
-          console.debug("FileExplorerLeaf is initialized");
+          console.debug('FileExplorerLeaf is initialized');
           this.fileExplorerView = fileExplorerLeaf.view;
           return true;
         }
 
-        console.debug("FileExplorerLeaf is not initialized yet. Repeating...");
+        console.debug('FileExplorerLeaf is not initialized yet. Repeating...');
         return false;
       });
     } catch (e) {
       console.error(e);
-      await this.disablePlugin("Could not initialize FileExplorerView. Disabling the plugin...");
+      await this.disablePlugin('Could not initialize FileExplorerView. Disabling the plugin...');
     }
   }
 

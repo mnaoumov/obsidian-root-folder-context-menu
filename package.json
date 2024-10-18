@@ -1,41 +1,26 @@
 {
   "name": "root-folder-context-menu",
-  "version": "1.2.2",
+  "version": "1.2.4",
   "description": "Enables context menu for vault root folder",
   "scripts": {
-    "build": "tsx scripts/npmScriptExecutor.ts build",
-    "dev": "tsx scripts/npmScriptExecutor.ts dev",
-    "lint": "tsx scripts/npmScriptExecutor.ts lint",
-    "postversion": "tsx scripts/npmScriptExecutor.ts postversion",
-    "preversion": "tsx scripts/npmScriptExecutor.ts preversion",
-    "version": "tsx scripts/npmScriptExecutor.ts version"
+    "build": "obsidian-dev-utils build",
+    "dev": "obsidian-dev-utils dev",
+    "lint": "obsidian-dev-utils lint",
+    "version": "obsidian-dev-utils version",
+    "build:validate": "obsidian-dev-utils build:validate",
+    "lint:fix": "obsidian-dev-utils lint:fix",
+    "spellcheck": "obsidian-dev-utils spellcheck"
   },
   "keywords": [],
   "author": "mnaoumov",
   "license": "MIT",
   "devDependencies": {
-    "@stylistic/eslint-plugin": "^2.1.0",
     "@tsconfig/strictest": "^2.0.5",
-    "@types/eslint": "^8.56.10",
-    "@types/node": "^20.12.13",
-    "@typescript-eslint/eslint-plugin": "^7.11.0",
-    "@typescript-eslint/parser": "^7.11.0",
-    "builtin-modules": "^4.0.0",
-    "esbuild": "^0.21.4",
-    "eslint": "^8.57.0",
-    "eslint-import-resolver-typescript": "^3.6.1",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-modules-newlines": "^0.0.7",
-    "globals": "^15.3.0",
-    "obsidian": "^1.5.7-1",
-    "obsidian-typings": "^1.1.6",
-    "tsx": "^4.11.0"
+    "@types/node": "^22.7.6",
+    "monkey-around": "^3.0.0",
+    "obsidian": "^1.7.2",
+    "obsidian-dev-utils": "^3.37.0",
+    "obsidian-typings": "^2.2.1-beta.33"
   },
-  "type": "module",
-  "dependencies": {
-    "monkey-around": "^3.0.0"
-  },
-  "engines": {
-    "node": ">=20.6.0"
-  }
+  "type": "module"
 }
