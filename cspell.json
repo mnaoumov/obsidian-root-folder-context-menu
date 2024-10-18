@@ -6,8 +6,10 @@
   "dictionaryDefinitions": [],
   "dictionaries": [],
   "words": [
+    "hotreload",
     "mnaoumov",
-    "Naumov"
+    "Naumov",
+    "preversion"
   ],
   "ignoreWords": [],
   "import": [],
