@@ -20,9 +20,12 @@
     "types": [
       "node",
       "obsidian-typings"
-    ]
+    ],
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": false
   },
   "include": [
-    "**/*.ts"
+    "./src/**/*.ts",
+    "./scripts/**/*.ts"
   ]
 }
