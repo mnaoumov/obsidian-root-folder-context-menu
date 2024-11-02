@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.3.0
+
+- Add empty files pane context menu
+- Fix build
+
 ## 1.2.5
 
 - Switch to new template
