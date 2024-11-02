@@ -55,6 +55,16 @@ export default class RootFolderContextMenu extends PluginBase<object> {
         document.body.click();
         this.fileExplorerView.openFileContextMenu(ev, vaultSwitcherEl.childNodes[0] as HTMLElement);
       });
+
+      const navFilesContainerEl = document.querySelector<HTMLElement>('.nav-files-container');
+      if (navFilesContainerEl) {
+        this.registerDomEvent(navFilesContainerEl, 'contextmenu', (ev: MouseEvent): void => {
+          if (ev.target !== navFilesContainerEl) {
+            return;
+          }
+          this.fileExplorerView.openFileContextMenu(ev, vaultSwitcherEl.childNodes[0] as HTMLElement);
+        });
+      }
     }
   }
 
