@@ -1,7 +1,8 @@
 {
   "version": "0.2",
   "ignorePaths": [
-    "dist"
+    "dist",
+    "tsconfig.tsbuildinfo"
   ],
   "dictionaryDefinitions": [],
   "dictionaries": [],
@@ -9,7 +10,8 @@
     "hotreload",
     "mnaoumov",
     "Naumov",
-    "preversion"
+    "preversion",
+    "tsbuildinfo"
   ],
   "ignoreWords": [],
   "import": [],
