@@ -4,7 +4,6 @@ import {
   PluginSettingTab,
   TFolder
 } from 'obsidian';
-import type { MaybePromise } from 'obsidian-dev-utils/Async';
 import { retryWithTimeout } from 'obsidian-dev-utils/Async';
 import { getPrototypeOf } from 'obsidian-dev-utils/Object';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
@@ -15,10 +14,6 @@ import type {
 import { InternalPluginName } from 'obsidian-typings/implementations';
 
 export default class RootFolderContextMenu extends PluginBase<object> {
-  protected override onloadComplete(): MaybePromise<void> {
-    throw new Error('Method not implemented.');
-  }
-
   private fileExplorerPlugin!: FileExplorerPlugin;
   private fileExplorerView!: FileExplorerView;
 
