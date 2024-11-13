@@ -1,3 +1,8 @@
+import type {
+  FileExplorerPlugin,
+  FileExplorerView
+} from 'obsidian-typings';
+
 import { around } from 'monkey-around';
 import {
   Notice,
@@ -7,10 +12,6 @@ import {
 import { retryWithTimeout } from 'obsidian-dev-utils/Async';
 import { getPrototypeOf } from 'obsidian-dev-utils/Object';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
-import type {
-  FileExplorerPlugin,
-  FileExplorerView
-} from 'obsidian-typings';
 import { InternalPluginName } from 'obsidian-typings/implementations';
 
 export default class RootFolderContextMenu extends PluginBase<object> {
@@ -21,7 +22,7 @@ export default class RootFolderContextMenu extends PluginBase<object> {
     return {};
   }
 
-  protected override createPluginSettingsTab(): PluginSettingTab | null {
+  protected override createPluginSettingsTab(): null | PluginSettingTab {
     return null;
   }
 
@@ -86,13 +87,10 @@ export default class RootFolderContextMenu extends PluginBase<object> {
     };
   }
 
-  private async reloadFileExplorer(): Promise<void> {
-    console.log('Disabling File Explorer plugin');
-    this.fileExplorerPlugin.disable();
-
-    console.log('Enabling File Explorer plugin');
-    await this.fileExplorerPlugin.enable();
-    await this.initFileExplorerView();
+  private async disablePlugin(message: string): Promise<void> {
+    console.error(message);
+    new Notice(message);
+    await this.app.plugins.disablePlugin(this.manifest.id);
   }
 
   private async initFileExplorerView(): Promise<void> {
@@ -115,9 +113,12 @@ export default class RootFolderContextMenu extends PluginBase<object> {
     }
   }
 
-  private async disablePlugin(message: string): Promise<void> {
-    console.error(message);
-    new Notice(message);
-    await this.app.plugins.disablePlugin(this.manifest.id);
+  private async reloadFileExplorer(): Promise<void> {
+    console.log('Disabling File Explorer plugin');
+    this.fileExplorerPlugin.disable();
+
+    console.log('Enabling File Explorer plugin');
+    await this.fileExplorerPlugin.enable();
+    await this.initFileExplorerView();
   }
 }
