@@ -14,7 +14,7 @@ import { getPrototypeOf } from 'obsidian-dev-utils/Object';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
 import { InternalPluginName } from 'obsidian-typings/implementations';
 
-export default class RootFolderContextMenu extends PluginBase<object> {
+export class RootFolderContextMenu extends PluginBase<object> {
   private fileExplorerPlugin!: FileExplorerPlugin;
   private fileExplorerView!: FileExplorerView;
 
