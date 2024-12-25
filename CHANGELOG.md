@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.3.3
+
+- Update libs
+- Avoid default exports
+
 ## 1.3.2
 
 - Update libs
