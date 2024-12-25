@@ -11,15 +11,16 @@ import {
 } from 'obsidian';
 import { retryWithTimeout } from 'obsidian-dev-utils/Async';
 import { getPrototypeOf } from 'obsidian-dev-utils/Object';
+import { EmptySettings } from 'obsidian-dev-utils/obsidian/Plugin/EmptySettings';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
 import { InternalPluginName } from 'obsidian-typings/implementations';
 
-export class RootFolderContextMenu extends PluginBase<object> {
+export class RootFolderContextMenu extends PluginBase {
   private fileExplorerPlugin!: FileExplorerPlugin;
   private fileExplorerView!: FileExplorerView;
 
-  protected override createDefaultPluginSettings(): object {
-    return {};
+  protected override createPluginSettings(): EmptySettings {
+    return new EmptySettings();
   }
 
   protected override createPluginSettingsTab(): null | PluginSettingTab {
@@ -95,12 +96,13 @@ export class RootFolderContextMenu extends PluginBase<object> {
 
   private async initFileExplorerView(): Promise<void> {
     try {
-      await retryWithTimeout((): boolean => {
+      await retryWithTimeout(async (): Promise<boolean> => {
         const fileExplorerLeaf = this.app.workspace.getLeavesOfType(InternalPluginName.FileExplorer)[0];
 
         if (fileExplorerLeaf) {
           console.debug('FileExplorerLeaf is initialized');
-          this.fileExplorerView = fileExplorerLeaf.view;
+          await fileExplorerLeaf.loadIfDeferred();
+          this.fileExplorerView = fileExplorerLeaf.view as FileExplorerView;
           return true;
         }
 
