@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.4.0
+
+- Hide inapplicable menu items
+- Hide built-in menu
+
 ## 1.3.4
 
 - Update libs
