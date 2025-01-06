@@ -52,22 +52,26 @@ export class RootFolderContextMenu extends PluginBase {
     if (vaultSwitcherEl) {
       this.fileExplorerView.files.set(vaultSwitcherEl, this.app.vault.getRoot());
       this.registerDomEvent(vaultSwitcherEl, 'contextmenu', async (ev: MouseEvent): Promise<void> => {
-        const RETRY_DELAY_IN_MILLISECONDS = 100;
-        await sleep(RETRY_DELAY_IN_MILLISECONDS);
-        document.body.click();
-        this.fileExplorerView.openFileContextMenu(ev, vaultSwitcherEl.childNodes[0] as HTMLElement);
+        await this.openContextMenu(ev, vaultSwitcherEl);
       });
 
       const navFilesContainerEl = document.querySelector<HTMLElement>('.nav-files-container');
       if (navFilesContainerEl) {
-        this.registerDomEvent(navFilesContainerEl, 'contextmenu', (ev: MouseEvent): void => {
+        this.registerDomEvent(navFilesContainerEl, 'contextmenu', async (ev: MouseEvent): Promise<void> => {
           if (ev.target !== navFilesContainerEl) {
             return;
           }
-          this.fileExplorerView.openFileContextMenu(ev, vaultSwitcherEl.childNodes[0] as HTMLElement);
+          await this.openContextMenu(ev, vaultSwitcherEl);
         });
       }
     }
+  }
+
+  private async openContextMenu(ev: Event, vaultSwitcherEl: HTMLElement): Promise<void> {
+    const RETRY_DELAY_IN_MILLISECONDS = 100;
+    await sleep(RETRY_DELAY_IN_MILLISECONDS);
+    document.body.click();
+    this.fileExplorerView.openFileContextMenu(ev, vaultSwitcherEl.childNodes[0] as HTMLElement);
   }
 
   private applyOpenFileContextMenuPatch(next: FileExplorerView['openFileContextMenu']): FileExplorerView['openFileContextMenu'] {
