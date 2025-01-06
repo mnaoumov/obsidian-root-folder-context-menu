@@ -5,8 +5,10 @@ import type {
 
 import { around } from 'monkey-around';
 import {
+  Menu,
   Notice,
   PluginSettingTab,
+  TAbstractFile,
   TFolder
 } from 'obsidian';
 import { retryWithTimeout } from 'obsidian-dev-utils/Async';
@@ -65,13 +67,8 @@ export class RootFolderContextMenu extends PluginBase {
         });
       }
     }
-  }
 
-  private async openContextMenu(ev: Event, vaultSwitcherEl: HTMLElement): Promise<void> {
-    const RETRY_DELAY_IN_MILLISECONDS = 100;
-    await sleep(RETRY_DELAY_IN_MILLISECONDS);
-    document.body.click();
-    this.fileExplorerView.openFileContextMenu(ev, vaultSwitcherEl.childNodes[0] as HTMLElement);
+    this.registerEvent(this.app.workspace.on('file-menu', this.handleFileMenuEvent.bind(this)));
   }
 
   private applyOpenFileContextMenuPatch(next: FileExplorerView['openFileContextMenu']): FileExplorerView['openFileContextMenu'] {
@@ -98,6 +95,23 @@ export class RootFolderContextMenu extends PluginBase {
     await this.app.plugins.disablePlugin(this.manifest.id);
   }
 
+  private handleFileMenuEvent(menu: Menu, file: TAbstractFile): void {
+    if (file.path !== '/') {
+      return;
+    }
+
+    const localizationKeys = [
+      'plugins.file-explorer.action-move-folder',
+      'plugins.file-explorer.menu-opt-delete',
+      'plugins.file-explorer.menu-opt-make-copy',
+      'plugins.file-explorer.menu-opt-rename',
+      'plugins.search.menu-opt-search-in-folder'
+    ];
+
+    const localizedTitles = localizationKeys.map((key) => i18next.t(key));
+    menu.items = menu.items.filter((item) => !localizedTitles.includes(item.titleEl.textContent ?? ''));
+  }
+
   private async initFileExplorerView(): Promise<void> {
     try {
       await retryWithTimeout(async (): Promise<boolean> => {
@@ -117,6 +131,13 @@ export class RootFolderContextMenu extends PluginBase {
       console.error(e);
       await this.disablePlugin('Could not initialize FileExplorerView. Disabling the plugin...');
     }
+  }
+
+  private async openContextMenu(ev: Event, vaultSwitcherEl: HTMLElement): Promise<void> {
+    const RETRY_DELAY_IN_MILLISECONDS = 100;
+    await sleep(RETRY_DELAY_IN_MILLISECONDS);
+    document.body.click();
+    this.fileExplorerView.openFileContextMenu(ev, vaultSwitcherEl.childNodes[0] as HTMLElement);
   }
 
   private async reloadFileExplorer(): Promise<void> {
