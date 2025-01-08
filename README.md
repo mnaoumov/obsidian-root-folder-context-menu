@@ -11,7 +11,7 @@ Full context menu as for any other folder is added:
 ## Installation
 
 - `Root Folder Context Menu` is available on [the official Community Plugins repository](https://obsidian.md/plugins?id=root-folder-context-menu).
-- Beta releases can be installed through [BRAT](https://github.com/TfTHacker/obsidian42-brat)
+- Beta releases can be installed through [BRAT](https://obsidian.md/plugins?id=obsidian42-brat).
 
 ## Support
 
