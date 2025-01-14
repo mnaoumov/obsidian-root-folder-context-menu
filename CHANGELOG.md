@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.4.1
+
+- https://github.com/mnaoumov/obsidian-dev-utils/releases/tag/13.9.0
+
 ## 1.4.0
 
 - Hide inapplicable menu items
