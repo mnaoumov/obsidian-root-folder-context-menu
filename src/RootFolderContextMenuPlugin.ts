@@ -118,13 +118,13 @@ export class RootFolderContextMenu extends PluginBase {
         const fileExplorerLeaf = this.app.workspace.getLeavesOfType(InternalPluginName.FileExplorer)[0];
 
         if (fileExplorerLeaf) {
-          console.debug('FileExplorerLeaf is initialized');
+          this.consoleDebug('FileExplorerLeaf is initialized');
           await fileExplorerLeaf.loadIfDeferred();
           this.fileExplorerView = fileExplorerLeaf.view as FileExplorerView;
           return true;
         }
 
-        console.debug('FileExplorerLeaf is not initialized yet. Repeating...');
+        this.consoleDebug('FileExplorerLeaf is not initialized yet. Repeating...');
         return false;
       });
     } catch (e) {
