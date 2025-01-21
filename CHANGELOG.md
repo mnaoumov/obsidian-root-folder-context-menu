@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.4.4
+
+- https://github.com/mnaoumov/obsidian-dev-utils/releases/tag/16.1.0
+
 ## 1.4.3
 
 - Replace console.log
