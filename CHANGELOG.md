@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.4.2
+
+- https://github.com/mnaoumov/obsidian-dev-utils/releases/tag/15.0.0
+
 ## 1.4.1
 
 - https://github.com/mnaoumov/obsidian-dev-utils/releases/tag/13.9.0
