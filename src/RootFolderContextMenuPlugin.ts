@@ -141,10 +141,10 @@ export class RootFolderContextMenu extends PluginBase {
   }
 
   private async reloadFileExplorer(): Promise<void> {
-    console.log('Disabling File Explorer plugin');
+    this.consoleDebug('Disabling File Explorer plugin');
     this.fileExplorerPlugin.disable();
 
-    console.log('Enabling File Explorer plugin');
+    this.consoleDebug('Enabling File Explorer plugin');
     await this.fileExplorerPlugin.enable();
     await this.initFileExplorerView();
   }
