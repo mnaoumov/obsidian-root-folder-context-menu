@@ -17,6 +17,8 @@ import { EmptySettings } from 'obsidian-dev-utils/obsidian/Plugin/EmptySettings'
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
 import { InternalPluginName } from 'obsidian-typings/implementations';
 
+type OpenFileContextMenuFn = (event: Event, fileItemEl: HTMLElement) => void;
+
 export class RootFolderContextMenu extends PluginBase {
   private fileExplorerPlugin!: FileExplorerPlugin;
   private fileExplorerView!: FileExplorerView;
@@ -42,8 +44,14 @@ export class RootFolderContextMenu extends PluginBase {
 
     const viewPrototype = getPrototypeOf(this.fileExplorerView);
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const that = this;
     const removeFileExplorerViewPatch = around(viewPrototype, {
-      openFileContextMenu: this.applyOpenFileContextMenuPatch.bind(this)
+      openFileContextMenu: (next: OpenFileContextMenuFn) => {
+        return function openFileContextMenuPatched(this: FileExplorerView, event: Event, fileItemElement: HTMLElement): void {
+          that.openFileContextMenu(next, this, event, fileItemElement);
+        };
+      }
     });
 
     this.register(removeFileExplorerViewPatch);
@@ -69,24 +77,6 @@ export class RootFolderContextMenu extends PluginBase {
     }
 
     this.registerEvent(this.app.workspace.on('file-menu', this.handleFileMenuEvent.bind(this)));
-  }
-
-  private applyOpenFileContextMenuPatch(next: FileExplorerView['openFileContextMenu']): FileExplorerView['openFileContextMenu'] {
-    return function (this: FileExplorerView, event: Event, fileItemElement: HTMLElement): void {
-      if (!fileItemElement.parentElement) {
-        return;
-      }
-      const file = this.files.get(fileItemElement.parentElement);
-
-      if (!(file instanceof TFolder) || !file.isRoot()) {
-        next.call(this, event, fileItemElement);
-        return;
-      }
-
-      file.isRoot = (): boolean => false;
-      next.call(this, event, fileItemElement);
-      file.isRoot = (): boolean => true;
-    };
   }
 
   private async disablePlugin(message: string): Promise<void> {
@@ -138,6 +128,22 @@ export class RootFolderContextMenu extends PluginBase {
     await sleep(RETRY_DELAY_IN_MILLISECONDS);
     document.body.click();
     this.fileExplorerView.openFileContextMenu(ev, vaultSwitcherEl.childNodes[0] as HTMLElement);
+  }
+
+  private openFileContextMenu(next: OpenFileContextMenuFn, view: FileExplorerView, event: Event, fileItemElement: HTMLElement): void {
+    if (!fileItemElement.parentElement) {
+      return;
+    }
+    const file = view.files.get(fileItemElement.parentElement);
+
+    if (!(file instanceof TFolder) || !file.isRoot()) {
+      next.call(this, event, fileItemElement);
+      return;
+    }
+
+    file.isRoot = (): boolean => false;
+    next.call(this, event, fileItemElement);
+    file.isRoot = (): boolean => true;
   }
 
   private async reloadFileExplorer(): Promise<void> {
