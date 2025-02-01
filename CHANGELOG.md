@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.4.7
+
+- Fix binding
+
 ## 1.4.6
 
 - Lint
