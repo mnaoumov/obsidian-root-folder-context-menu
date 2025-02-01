@@ -137,12 +137,12 @@ export class RootFolderContextMenu extends PluginBase {
     const file = view.files.get(fileItemElement.parentElement);
 
     if (!(file instanceof TFolder) || !file.isRoot()) {
-      next.call(this, event, fileItemElement);
+      next.call(view, event, fileItemElement);
       return;
     }
 
     file.isRoot = (): boolean => false;
-    next.call(this, event, fileItemElement);
+    next.call(view, event, fileItemElement);
     file.isRoot = (): boolean => true;
   }
 
