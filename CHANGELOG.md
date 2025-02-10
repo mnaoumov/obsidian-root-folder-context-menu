@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.4.8
+
+- Update templates
+- https://github.com/mnaoumov/obsidian-dev-utils/releases/tag/18.4.2
+
 ## 1.4.7
 
 - Fix binding
