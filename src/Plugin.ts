@@ -3,33 +3,25 @@ import type {
   FileExplorerView
 } from 'obsidian-typings';
 
-import { around } from 'monkey-around';
 import {
   Menu,
   Notice,
-  PluginSettingTab,
   TAbstractFile,
   TFolder
 } from 'obsidian';
 import { retryWithTimeout } from 'obsidian-dev-utils/Async';
 import { getPrototypeOf } from 'obsidian-dev-utils/Object';
-import { EmptySettings } from 'obsidian-dev-utils/obsidian/Plugin/EmptySettings';
+import { registerPatch } from 'obsidian-dev-utils/obsidian/MonkeyAround';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
 import { InternalPluginName } from 'obsidian-typings/implementations';
 
-type OpenFileContextMenuFn = (event: Event, fileItemEl: HTMLElement) => void;
+import type { PluginTypes } from './PluginTypes.ts';
 
-export class RootFolderContextMenu extends PluginBase {
+type OpenFileContextMenuFn = FileExplorerView['openFileContextMenu'];
+
+export class Plugin extends PluginBase<PluginTypes> {
   private fileExplorerPlugin!: FileExplorerPlugin;
   private fileExplorerView!: FileExplorerView;
-
-  protected override createPluginSettings(): EmptySettings {
-    return new EmptySettings();
-  }
-
-  protected override createPluginSettingsTab(): null | PluginSettingTab {
-    return null;
-  }
 
   protected override async onLayoutReady(): Promise<void> {
     const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(InternalPluginName.FileExplorer);
@@ -44,9 +36,8 @@ export class RootFolderContextMenu extends PluginBase {
 
     const viewPrototype = getPrototypeOf(this.fileExplorerView);
 
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
-    const removeFileExplorerViewPatch = around(viewPrototype, {
+    registerPatch(this, viewPrototype, {
       openFileContextMenu: (next: OpenFileContextMenuFn) => {
         return function openFileContextMenuPatched(this: FileExplorerView, event: Event, fileItemElement: HTMLElement): void {
           that.openFileContextMenu(next, this, event, fileItemElement);
@@ -54,7 +45,6 @@ export class RootFolderContextMenu extends PluginBase {
       }
     });
 
-    this.register(removeFileExplorerViewPatch);
     this.register(this.reloadFileExplorer.bind(this));
     await this.reloadFileExplorer();
 
