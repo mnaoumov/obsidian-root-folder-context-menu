@@ -25,7 +25,10 @@
     "skipLibCheck": false
   },
   "include": [
+    "./eslint.config.*ts",
+    "./src/**/*.svelte",
     "./src/**/*.ts",
+    "./src/**/*.tsx",
     "./scripts/**/*.ts"
   ]
 }

@@ -1,4 +1,4 @@
-import { RootFolderContextMenu } from './RootFolderContextMenuPlugin.ts';
+import { Plugin } from './Plugin.ts';
 
 // eslint-disable-next-line import-x/no-default-export
-export default RootFolderContextMenu;
+export default Plugin;
