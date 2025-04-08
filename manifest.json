@@ -1,7 +1,7 @@
 {
   "id": "root-folder-context-menu",
   "name": "Root Folder Context Menu",
-  "version": "1.4.11",
+  "version": "1.4.12",
   "minAppVersion": "1.8.9",
   "description": "Enables context menu for vault root folder",
   "author": "mnaoumov",
