@@ -88,7 +88,7 @@ export class Plugin extends PluginBase<PluginTypes> {
       'plugins.search.menu-opt-search-in-folder'
     ];
 
-    const localizedTitles = localizationKeys.map((key) => i18next.t(key));
+    const localizedTitles = localizationKeys.map((key) => window.i18next.t(key));
     menu.items = menu.items.filter((item) => !localizedTitles.includes(item.titleEl.textContent ?? ''));
   }
 
