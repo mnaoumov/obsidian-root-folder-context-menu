@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.4.18
+
+- Update libs
+- Check type of each item in menu.items (#4). Thanks to @kotaindah55
+
 ## 1.4.17
 
 - Update libs
