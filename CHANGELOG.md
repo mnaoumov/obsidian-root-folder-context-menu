@@ -1,49 +1,52 @@
 # CHANGELOG
 
+## 1.4.22
+
+- Minor changes
+
 ## 1.4.21
 
-- Update libs
+- Minor changes
 
 ## 1.4.20
 
-- Update libs
+- Minor changes
 
 ## 1.4.19
 
-- Update libs
+- Minor changes
 
 ## 1.4.18
 
-- Update libs
 - Check type of each item in menu.items (#4). Thanks to @kotaindah55
 
 ## 1.4.17
 
-- Update libs
+- Minor changes
 
 ## 1.4.16
 
-- Update libs
+- Minor changes
 
 ## 1.4.15
 
-- Update libs
+- Minor changes
 
 ## 1.4.14
 
-- Update libs
+- Minor changes
 
 ## 1.4.13
 
-- https://github.com/mnaoumov/obsidian-dev-utils/releases/tag/24.1.1
+- Minor changes
 
 ## 1.4.12
 
-- https://github.com/mnaoumov/obsidian-dev-utils/releases/tag/24.1.0
+- Minor changes
 
 ## 1.4.11
 
-- https://github.com/mnaoumov/obsidian-dev-utils/releases/tag/24.0.1
+- Minor changes
 
 ## 1.4.10
 
@@ -51,12 +54,11 @@
 
 ## 1.4.9
 
-- https://github.com/mnaoumov/obsidian-dev-utils/releases/tag/19.2.1
+- Minor changes
 
 ## 1.4.8
 
 - Update templates
-- https://github.com/mnaoumov/obsidian-dev-utils/releases/tag/18.4.2
 
 ## 1.4.7
 
@@ -65,7 +67,6 @@
 ## 1.4.6
 
 - Lint
-- https://github.com/mnaoumov/obsidian-dev-utils/releases/tag/17.2.2
 
 ## 1.4.5
 
@@ -73,7 +74,7 @@
 
 ## 1.4.4
 
-- https://github.com/mnaoumov/obsidian-dev-utils/releases/tag/16.1.0
+- Minor changes
 
 ## 1.4.3
 
@@ -81,11 +82,11 @@
 
 ## 1.4.2
 
-- https://github.com/mnaoumov/obsidian-dev-utils/releases/tag/15.0.0
+- Minor changes
 
 ## 1.4.1
 
-- https://github.com/mnaoumov/obsidian-dev-utils/releases/tag/13.9.0
+- Minor changes
 
 ## 1.4.0
 
@@ -94,20 +95,19 @@
 
 ## 1.3.4
 
-- Update libs
+- Minor changes
 
 ## 1.3.3
 
-- Update libs
 - Avoid default exports
 
 ## 1.3.2
 
-- Update libs
+- Minor changes
 
 ## 1.3.1
 
-- Update libs
+- Minor changes
 
 ## 1.3.0
 
