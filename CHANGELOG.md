@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.4.23
+
+- Minor changes
+
 ## 1.4.22
 
 - Minor changes
@@ -142,11 +146,11 @@
 
 # 1.1.0
 
-- Minor refactoring
+- Minor changes
 
 # 1.0.3
 
-- Minor refactoring
+- Minor changes
 
 # 1.0.2
 
