@@ -90,7 +90,7 @@ export class Plugin extends PluginBase<PluginTypes> {
     ];
 
     const localizedTitles = localizationKeys.map((key) => window.i18next.t(key));
-    menu.items = menu.items.filter((item) => !(item instanceof MenuItem) || !localizedTitles.includes(item.titleEl.textContent ?? ''));
+    menu.items = menu.items.filter((item) => !(item instanceof MenuItem) || !localizedTitles.includes(item.titleEl.textContent));
   }
 
   private async initFileExplorerView(): Promise<void> {
@@ -122,7 +122,7 @@ export class Plugin extends PluginBase<PluginTypes> {
   }
 
   private openFileContextMenu(next: OpenFileContextMenuFn, view: FileExplorerView, event: Event, fileItemElement: HTMLElement): void {
-    if (!fileItemElement.parentElement) {
+    if (!(fileItemElement.parentElement instanceof HTMLElement)) {
       return;
     }
     const file = view.files.get(fileItemElement.parentElement);
