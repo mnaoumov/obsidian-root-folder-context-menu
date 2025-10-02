@@ -122,7 +122,7 @@ export class Plugin extends PluginBase<PluginTypes> {
     const RETRY_DELAY_IN_MILLISECONDS = 100;
     await sleep(RETRY_DELAY_IN_MILLISECONDS);
     document.body.click();
-    this.fileExplorerView.openFileContextMenu(ev, vaultSwitcherEl.childNodes[0] as HTMLElement);
+    this.fileExplorerView?.openFileContextMenu(ev, vaultSwitcherEl.childNodes[0] as HTMLElement);
   }
 
   private openFileContextMenu(next: OpenFileContextMenuFn, view: FileExplorerView, event: Event, fileItemElement: HTMLElement): void {
@@ -143,10 +143,10 @@ export class Plugin extends PluginBase<PluginTypes> {
 
   private async reloadFileExplorer(): Promise<void> {
     this.consoleDebug('Disabling File Explorer plugin');
-    this.fileExplorerPlugin.disable();
+    this.fileExplorerPlugin?.disable();
 
     this.consoleDebug('Enabling File Explorer plugin');
-    await this.fileExplorerPlugin.enable();
+    await this.fileExplorerPlugin?.enable();
     await this.initFileExplorerView();
   }
 }
