@@ -21,8 +21,8 @@ import type { PluginTypes } from './PluginTypes.ts';
 type OpenFileContextMenuFn = FileExplorerView['openFileContextMenu'];
 
 export class Plugin extends PluginBase<PluginTypes> {
-  private fileExplorerPlugin!: FileExplorerPlugin;
-  private fileExplorerView!: FileExplorerView;
+  private fileExplorerPlugin?: FileExplorerPlugin;
+  private fileExplorerView?: FileExplorerView;
 
   protected override async onLayoutReady(): Promise<void> {
     const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(InternalPluginName.FileExplorer);
@@ -34,6 +34,10 @@ export class Plugin extends PluginBase<PluginTypes> {
 
     this.fileExplorerPlugin = fileExplorerPluginInstance.plugin;
     await this.initFileExplorerView();
+
+    if (!this.fileExplorerView) {
+      return;
+    }
 
     const viewPrototype = getPrototypeOf(this.fileExplorerView);
 
