@@ -1,6 +1,6 @@
 {
   "name": "root-folder-context-menu",
-  "version": "1.4.32",
+  "version": "1.4.33",
   "description": "Enables context menu for vault root folder",
   "scripts": {
     "build": "obsidian-dev-utils build",
