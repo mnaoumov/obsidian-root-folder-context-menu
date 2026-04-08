@@ -10,7 +10,10 @@ import {
   TAbstractFile,
   TFolder
 } from 'obsidian';
-import { retryWithTimeout } from 'obsidian-dev-utils/async';
+import {
+  convertAsyncToSync,
+  retryWithTimeout
+} from 'obsidian-dev-utils/async';
 import { getPrototypeOf } from 'obsidian-dev-utils/object-utils';
 import { registerPatch } from 'obsidian-dev-utils/obsidian/monkey-around';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/plugin/plugin-base';
@@ -56,18 +59,26 @@ export class Plugin extends PluginBase<PluginTypes> {
     const vaultSwitcherEl = document.querySelector<HTMLElement>('.workspace-drawer-vault-switcher');
     if (vaultSwitcherEl) {
       this.fileExplorerView.files.set(vaultSwitcherEl, this.app.vault.getRoot());
-      this.registerDomEvent(vaultSwitcherEl, 'contextmenu', async (ev: MouseEvent): Promise<void> => {
-        await this.openContextMenu(ev, vaultSwitcherEl);
-      });
+      this.registerDomEvent(
+        vaultSwitcherEl,
+        'contextmenu',
+        convertAsyncToSync(async (ev: MouseEvent): Promise<void> => {
+          await this.openContextMenu(ev, vaultSwitcherEl);
+        })
+      );
 
       const navFilesContainerEl = document.querySelector<HTMLElement>('.nav-files-container');
       if (navFilesContainerEl) {
-        this.registerDomEvent(navFilesContainerEl, 'contextmenu', async (ev: MouseEvent): Promise<void> => {
-          if (ev.target !== navFilesContainerEl) {
-            return;
-          }
-          await this.openContextMenu(ev, vaultSwitcherEl);
-        });
+        this.registerDomEvent(
+          navFilesContainerEl,
+          'contextmenu',
+          convertAsyncToSync(async (ev: MouseEvent): Promise<void> => {
+            if (ev.target !== navFilesContainerEl) {
+              return;
+            }
+            await this.openContextMenu(ev, vaultSwitcherEl);
+          })
+        );
       }
     }
 
