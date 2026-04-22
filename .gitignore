@@ -22,6 +22,7 @@ data.json
 .DS_Store
 
 dist
+coverage
 
 /.env
 /tsconfig.tsbuildinfo
