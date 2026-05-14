@@ -3,7 +3,7 @@
   "name": "Root Folder Context Menu",
   "version": "1.4.35",
   "minAppVersion": "1.12.4",
-  "description": "Enables context menu for vault root folder",
+  "description": "Enables context menu for vault root folder.",
   "author": "mnaoumov",
   "authorUrl": "https://github.com/mnaoumov",
   "isDesktopOnly": false,
