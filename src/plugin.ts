@@ -1,7 +1,7 @@
 import type {
   FileExplorerPlugin,
   FileExplorerView
-} from 'obsidian-typings';
+} from '@obsidian-typings/obsidian-public-latest';
 
 import {
   Menu,
@@ -17,7 +17,7 @@ import {
 import { getPrototypeOf } from 'obsidian-dev-utils/object-utils';
 import { registerPatch } from 'obsidian-dev-utils/obsidian/monkey-around';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/plugin/plugin';
-import { InternalPluginName } from 'obsidian-typings/implementations';
+import { InternalPluginName } from '@obsidian-typings/obsidian-public-latest/implementations';
 
 type OpenFileContextMenuFn = FileExplorerView['openFileContextMenu'];
 

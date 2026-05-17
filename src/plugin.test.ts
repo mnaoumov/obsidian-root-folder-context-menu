@@ -1,4 +1,4 @@
-import type { RegisterComponentParams } from 'obsidian-dev-utils/obsidian/plugin/plugin';
+import type { Component } from 'obsidian';
 
 import {
   afterEach,
@@ -64,7 +64,7 @@ const PluginBaseMock = vi.hoisted(() =>
     public manifest: unknown;
     private readonly domEventHandlers: DomEventHandlerEntry[] = [];
     private readonly eventHandlers: unknown[] = [];
-    private readonly registeredComponents: RegisterComponentParams[] = [];
+    private readonly addedChildren: Component[] = [];
     private readonly unloadCallbacks: (() => unknown)[] = [];
 
     public constructor(app: unknown, manifest: unknown) {
@@ -76,9 +76,9 @@ const PluginBaseMock = vi.hoisted(() =>
       this.unloadCallbacks.push(callback);
     }
 
-    public registerComponent(params: RegisterComponentParams): unknown {
-      this.registeredComponents.push(params);
-      return params.component;
+    public addChild<T extends Component>(child: T): T {
+      this.addedChildren.push(child);
+      return child;
     }
 
     public registerDomEvent(element: unknown, event: string, handler: (...args: unknown[]) => unknown): void {
@@ -108,7 +108,7 @@ vi.mock('obsidian-dev-utils/obsidian/monkey-around', () => ({
   registerPatch: vi.fn()
 }));
 
-vi.mock('obsidian-typings/implementations', () => ({
+vi.mock('@obsidian-typings/obsidian-public-latest/implementations', () => ({
   InternalPluginName: {
     FileExplorer: 'file-explorer'
   }
