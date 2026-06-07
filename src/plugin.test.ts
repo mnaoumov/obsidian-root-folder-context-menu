@@ -1,5 +1,11 @@
-import type { Component } from 'obsidian';
+import type {
+  App,
+  Component,
+  PluginManifest
+} from 'obsidian';
 
+import { castTo } from 'obsidian-dev-utils/object-utils';
+import { assertNonNullable } from 'obsidian-dev-utils/type-guards';
 import {
   afterEach,
   beforeEach,
@@ -12,7 +18,7 @@ import {
 interface DomEventHandlerEntry {
   element: unknown;
   event: string;
-  handler: (...args: unknown[]) => unknown;
+  handler(...args: unknown[]): unknown;
 }
 
 interface MockApp {
@@ -36,7 +42,7 @@ interface MockPlugins {
 }
 
 interface MockVault {
-  getRoot: () => unknown;
+  getRoot(): unknown;
 }
 
 interface MockWorkspace {
@@ -45,16 +51,16 @@ interface MockWorkspace {
 }
 
 interface PluginPrivateMethods {
-  handleFileMenuEvent: (menu: unknown, file: unknown) => void;
-  initFileExplorerView: () => Promise<void>;
-  onLayoutReady: () => Promise<void>;
-  openContextMenu: (ev: unknown, el: unknown) => Promise<void>;
-  openFileContextMenu: (next: unknown, view: unknown, event: unknown, el: unknown) => void;
-  reloadFileExplorer: () => Promise<void>;
+  handleFileMenuEvent(menu: unknown, file: unknown): void;
+  initFileExplorerView(): Promise<void>;
+  onLayoutReady(): Promise<void>;
+  openContextMenu(ev: unknown, el: unknown): Promise<void>;
+  openFileContextMenu(next: unknown, view: unknown, event: unknown, el: unknown): void;
+  reloadFileExplorer(): Promise<void>;
 }
 
 interface RetryParams {
-  operationFn: (abortSignal: AbortSignal) => boolean | PromiseLike<boolean>;
+  operationFn(abortSignal: AbortSignal): boolean | PromiseLike<boolean>;
 }
 
 const PluginBaseMock = vi.hoisted(() =>
@@ -62,9 +68,9 @@ const PluginBaseMock = vi.hoisted(() =>
     public app: unknown;
     public consoleDebugComponent = { debug: vi.fn() };
     public manifest: unknown;
+    private readonly addedChildren: Component[] = [];
     private readonly domEventHandlers: DomEventHandlerEntry[] = [];
     private readonly eventHandlers: unknown[] = [];
-    private readonly addedChildren: Component[] = [];
     private readonly unloadCallbacks: (() => unknown)[] = [];
 
     public constructor(app: unknown, manifest: unknown) {
@@ -72,13 +78,13 @@ const PluginBaseMock = vi.hoisted(() =>
       this.manifest = manifest;
     }
 
-    public register(callback: () => unknown): void {
-      this.unloadCallbacks.push(callback);
-    }
-
     public addChild<T extends Component>(child: T): T {
       this.addedChildren.push(child);
       return child;
+    }
+
+    public register(callback: () => unknown): void {
+      this.unloadCallbacks.push(callback);
     }
 
     public registerDomEvent(element: unknown, event: string, handler: (...args: unknown[]) => unknown): void {
@@ -101,11 +107,23 @@ vi.mock('obsidian-dev-utils/async', () => ({
 }));
 
 vi.mock('obsidian-dev-utils/object-utils', () => ({
+  castTo: (value: unknown): unknown => value,
   getPrototypeOf: vi.fn((obj: unknown) => Object.getPrototypeOf(obj as object))
 }));
 
-vi.mock('obsidian-dev-utils/obsidian/monkey-around', () => ({
-  registerPatch: vi.fn()
+const { mockCallbackLayoutReadyComponent, mockRegisterPatch } = vi.hoisted(() => ({
+  mockCallbackLayoutReadyComponent: vi.fn(),
+  mockRegisterPatch: vi.fn()
+}));
+
+vi.mock('obsidian-dev-utils/obsidian/components/monkey-around-component', () => ({
+  MonkeyAroundComponent: class {
+    public registerPatch = mockRegisterPatch;
+  }
+}));
+
+vi.mock('obsidian-dev-utils/obsidian/components/layout-ready-component', () => ({
+  CallbackLayoutReadyComponent: mockCallbackLayoutReadyComponent
 }));
 
 vi.mock('@obsidian-typings/obsidian-public-latest/implementations', () => ({
@@ -130,6 +148,7 @@ vi.mock('obsidian', () => {
     }
   }
   return {
+    Component: vi.fn(),
     Menu: MockMenu,
     MenuItem: MockMenuItem,
     Notice: vi.fn(),
@@ -145,8 +164,6 @@ import {
 } from 'obsidian';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { retryWithTimeout } from 'obsidian-dev-utils/async';
-// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { registerPatch } from 'obsidian-dev-utils/obsidian/monkey-around';
 
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { Plugin } from './plugin.ts';
@@ -203,7 +220,7 @@ describe('Plugin', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockApp = createMockApp();
-    plugin = new Plugin(mockApp as never, { id: 'root-folder-context-menu' } as never);
+    plugin = new Plugin(castTo<App>(mockApp), castTo<PluginManifest>({ id: 'root-folder-context-menu' }));
   });
 
   afterEach(() => {
@@ -249,7 +266,42 @@ describe('Plugin', () => {
 
       await asPrivate(plugin).onLayoutReady();
 
-      expect(registerPatch).toHaveBeenCalled();
+      expect(mockRegisterPatch).toHaveBeenCalled();
+    });
+
+    it('should invoke openFileContextMenu factory with next function when registerPatch is called', async () => {
+      const mockFileExplorerView = {
+        files: new Map(),
+        openFileContextMenu: vi.fn()
+      };
+      const mockLeaf = {
+        loadIfDeferred: vi.fn().mockResolvedValue(undefined),
+        view: mockFileExplorerView
+      };
+
+      mockApp.internalPlugins.getEnabledPluginById.mockReturnValue({
+        plugin: createMockFileExplorerPlugin()
+      });
+
+      setupRetryWithTimeoutToResolveLeaf(mockApp.workspace, mockLeaf);
+
+      vi.stubGlobal('activeDocument', {
+        body: { click: vi.fn() },
+        querySelector: vi.fn().mockReturnValue(null)
+      });
+
+      await asPrivate(plugin).onLayoutReady();
+
+      const [, patches] = mockRegisterPatch.mock.calls[0] as [unknown, Record<string, (next: (...args: unknown[]) => unknown) => unknown>];
+      const factory = patches['openFileContextMenu'];
+      assertNonNullable(factory);
+      expect(factory).toBeTypeOf('function');
+
+      const mockNext = vi.fn();
+      const result = factory(mockNext);
+      expect(result).toBeTypeOf('function');
+
+      vi.unstubAllGlobals();
     });
 
     it('should return early when file explorer view cannot be initialized', async () => {
@@ -262,7 +314,7 @@ describe('Plugin', () => {
 
       await asPrivate(plugin).onLayoutReady();
 
-      expect(registerPatch).not.toHaveBeenCalled();
+      expect(mockRegisterPatch).not.toHaveBeenCalled();
     });
 
     it('should register vault switcher context menu when element exists', async () => {

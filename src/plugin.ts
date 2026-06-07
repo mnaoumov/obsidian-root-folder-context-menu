@@ -2,7 +2,12 @@ import type {
   FileExplorerPlugin,
   FileExplorerView
 } from '@obsidian-typings/obsidian-public-latest';
+import type {
+  App,
+  PluginManifest
+} from 'obsidian';
 
+import { InternalPluginName } from '@obsidian-typings/obsidian-public-latest/implementations';
 import {
   Menu,
   MenuItem,
@@ -15,78 +20,21 @@ import {
   retryWithTimeout
 } from 'obsidian-dev-utils/async';
 import { getPrototypeOf } from 'obsidian-dev-utils/object-utils';
-import { registerPatch } from 'obsidian-dev-utils/obsidian/monkey-around';
+import { CallbackLayoutReadyComponent } from 'obsidian-dev-utils/obsidian/components/layout-ready-component';
+import { MonkeyAroundComponent } from 'obsidian-dev-utils/obsidian/components/monkey-around-component';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/plugin/plugin';
-import { InternalPluginName } from '@obsidian-typings/obsidian-public-latest/implementations';
 
 type OpenFileContextMenuFn = FileExplorerView['openFileContextMenu'];
 
 export class Plugin extends PluginBase {
   private fileExplorerPlugin?: FileExplorerPlugin;
   private fileExplorerView?: FileExplorerView;
+  private readonly monkeyAroundComponent: MonkeyAroundComponent;
 
-  protected override async onLayoutReady(): Promise<void> {
-    const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(InternalPluginName.FileExplorer);
-
-    if (!fileExplorerPluginInstance) {
-      await this.disablePlugin('File Explorer plugin is disabled. Disabling the plugin...');
-      return;
-    }
-
-    this.fileExplorerPlugin = fileExplorerPluginInstance.plugin;
-    await this.initFileExplorerView();
-
-    if (!this.fileExplorerView) {
-      return;
-    }
-
-    const viewPrototype = getPrototypeOf(this.fileExplorerView);
-
-    const that = this;
-    registerPatch(this, viewPrototype, {
-      openFileContextMenu: (next: OpenFileContextMenuFn) => {
-        /* v8 ignore start -- runtime-only callback invoked by Obsidian's monkey-patch system. */
-        return function openFileContextMenuPatched(this: FileExplorerView, event: Event, fileItemElement: HTMLElement): void {
-          that.openFileContextMenu(next, this, event, fileItemElement);
-        };
-        /* v8 ignore stop */
-      }
-    });
-
-    this.register(this.reloadFileExplorer.bind(this));
-    await this.reloadFileExplorer();
-
-    const vaultSwitcherEl = activeDocument.querySelector<HTMLElement>('.workspace-drawer-vault-switcher');
-    if (vaultSwitcherEl) {
-      this.fileExplorerView.files.set(vaultSwitcherEl, this.app.vault.getRoot());
-      this.registerDomEvent(
-        vaultSwitcherEl,
-        'contextmenu',
-        /* v8 ignore start -- DOM event callback invoked by browser at runtime. */
-        convertAsyncToSync(async (ev: MouseEvent): Promise<void> => {
-          await this.openContextMenu(ev, vaultSwitcherEl);
-        })
-        /* v8 ignore stop */
-      );
-
-      const navFilesContainerEl = activeDocument.querySelector<HTMLElement>('.nav-files-container');
-      if (navFilesContainerEl) {
-        this.registerDomEvent(
-          navFilesContainerEl,
-          'contextmenu',
-          /* v8 ignore start -- DOM event callback invoked by browser at runtime. */
-          convertAsyncToSync(async (ev: MouseEvent): Promise<void> => {
-            if (ev.target !== navFilesContainerEl) {
-              return;
-            }
-            await this.openContextMenu(ev, vaultSwitcherEl);
-          })
-          /* v8 ignore stop */
-        );
-      }
-    }
-
-    this.registerEvent(this.app.workspace.on('file-menu', this.handleFileMenuEvent.bind(this)));
+  public constructor(app: App, manifest: PluginManifest) {
+    super(app, manifest);
+    this.monkeyAroundComponent = this.addChild(new MonkeyAroundComponent());
+    this.addChild(new CallbackLayoutReadyComponent(this.app, this.onLayoutReady.bind(this)));
   }
 
   private async disablePlugin(message: string): Promise<void> {
@@ -134,6 +82,70 @@ export class Plugin extends PluginBase {
       console.error(e);
       await this.disablePlugin('Could not initialize FileExplorerView. Disabling the plugin...');
     }
+  }
+
+  private async onLayoutReady(): Promise<void> {
+    const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(InternalPluginName.FileExplorer);
+
+    if (!fileExplorerPluginInstance) {
+      await this.disablePlugin('File Explorer plugin is disabled. Disabling the plugin...');
+      return;
+    }
+
+    this.fileExplorerPlugin = fileExplorerPluginInstance.plugin;
+    await this.initFileExplorerView();
+
+    if (!this.fileExplorerView) {
+      return;
+    }
+
+    const viewPrototype = getPrototypeOf(this.fileExplorerView);
+
+    const that = this;
+    this.monkeyAroundComponent.registerPatch(viewPrototype, {
+      openFileContextMenu: (next: OpenFileContextMenuFn) => {
+        /* v8 ignore start -- runtime-only callback invoked by Obsidian's monkey-patch system. */
+        return function openFileContextMenuPatched(this: FileExplorerView, event: Event, fileItemElement: HTMLElement): void {
+          that.openFileContextMenu(next, this, event, fileItemElement);
+        };
+        /* v8 ignore stop */
+      }
+    });
+
+    this.register(this.reloadFileExplorer.bind(this));
+    await this.reloadFileExplorer();
+
+    const vaultSwitcherEl = activeDocument.querySelector<HTMLElement>('.workspace-drawer-vault-switcher');
+    if (vaultSwitcherEl) {
+      this.fileExplorerView.files.set(vaultSwitcherEl, this.app.vault.getRoot());
+      this.registerDomEvent(
+        vaultSwitcherEl,
+        'contextmenu',
+        /* v8 ignore start -- DOM event callback invoked by browser at runtime. */
+        convertAsyncToSync(async (ev: MouseEvent): Promise<void> => {
+          await this.openContextMenu(ev, vaultSwitcherEl);
+        })
+        /* v8 ignore stop */
+      );
+
+      const navFilesContainerEl = activeDocument.querySelector<HTMLElement>('.nav-files-container');
+      if (navFilesContainerEl) {
+        this.registerDomEvent(
+          navFilesContainerEl,
+          'contextmenu',
+          /* v8 ignore start -- DOM event callback invoked by browser at runtime. */
+          convertAsyncToSync(async (ev: MouseEvent): Promise<void> => {
+            if (ev.target !== navFilesContainerEl) {
+              return;
+            }
+            await this.openContextMenu(ev, vaultSwitcherEl);
+          })
+          /* v8 ignore stop */
+        );
+      }
+    }
+
+    this.registerEvent(this.app.workspace.on('file-menu', this.handleFileMenuEvent.bind(this)));
   }
 
   private async openContextMenu(ev: Event, vaultSwitcherEl: HTMLElement): Promise<void> {

@@ -10,6 +10,7 @@ vi.mock('obsidian-dev-utils/obsidian/plugin/plugin', () => ({
 }));
 
 vi.mock('obsidian', () => ({
+  Component: vi.fn(),
   Menu: vi.fn(),
   MenuItem: vi.fn(),
   Notice: vi.fn(),
