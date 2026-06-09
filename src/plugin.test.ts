@@ -66,7 +66,7 @@ interface RetryParams {
 const PluginBaseMock = vi.hoisted(() =>
   class {
     public app: unknown;
-    public consoleDebugComponent = { debug: vi.fn() };
+    public consoleDebugComponent = { consoleDebug: vi.fn() };
     public manifest: unknown;
     private readonly addedChildren: Component[] = [];
     private readonly domEventHandlers: DomEventHandlerEntry[] = [];

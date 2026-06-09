@@ -67,13 +67,13 @@ export class Plugin extends PluginBase {
           const fileExplorerLeaf = this.app.workspace.getLeavesOfType(InternalPluginName.FileExplorer)[0];
 
           if (fileExplorerLeaf) {
-            this.consoleDebugComponent.debug('FileExplorerLeaf is initialized');
+            this.consoleDebugComponent.consoleDebug('FileExplorerLeaf is initialized');
             await fileExplorerLeaf.loadIfDeferred();
             this.fileExplorerView = fileExplorerLeaf.view as FileExplorerView;
             return true;
           }
 
-          this.consoleDebugComponent.debug('FileExplorerLeaf is not initialized yet. Repeating...');
+          this.consoleDebugComponent.consoleDebug('FileExplorerLeaf is not initialized yet. Repeating...');
           return false;
         },
         operationName: 'Initialize FileExplorerView'
@@ -172,10 +172,10 @@ export class Plugin extends PluginBase {
   }
 
   private async reloadFileExplorer(): Promise<void> {
-    this.consoleDebugComponent.debug('Disabling File Explorer plugin');
+    this.consoleDebugComponent.consoleDebug('Disabling File Explorer plugin');
     this.fileExplorerPlugin?.disable();
 
-    this.consoleDebugComponent.debug('Enabling File Explorer plugin');
+    this.consoleDebugComponent.consoleDebug('Enabling File Explorer plugin');
     await this.fileExplorerPlugin?.enable();
     await this.initFileExplorerView();
   }
