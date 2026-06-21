@@ -1,11 +1,23 @@
+import type { FileExplorerPlugin } from '@obsidian-typings/obsidian-public-latest';
 import type {
-  App,
-  Component,
-  PluginManifest
+  App as AppType,
+  EventRef,
+  Menu,
+  MenuItem as MenuItemType,
+  PluginManifest,
+  TFolder as TFolderType
 } from 'obsidian';
 
+import {
+  noop,
+  noopAsync
+} from 'obsidian-dev-utils/function';
 import { castTo } from 'obsidian-dev-utils/object-utils';
-import { assertNonNullable } from 'obsidian-dev-utils/type-guards';
+import {
+  App,
+  MenuItem,
+  TFolder
+} from 'obsidian-test-mocks/obsidian';
 import {
   afterEach,
   beforeEach,
@@ -15,600 +27,429 @@ import {
   vi
 } from 'vitest';
 
-interface DomEventHandlerEntry {
-  element: unknown;
-  event: string;
-  handler(...args: unknown[]): unknown;
-}
-
-interface MockApp {
-  internalPlugins: MockInternalPlugins;
-  plugins: MockPlugins;
-  vault: MockVault;
-  workspace: MockWorkspace;
-}
-
-interface MockFileExplorerPlugin {
-  disable: ReturnType<typeof vi.fn>;
-  enable: ReturnType<typeof vi.fn>;
-}
-
-interface MockInternalPlugins {
-  getEnabledPluginById: ReturnType<typeof vi.fn>;
-}
-
-interface MockPlugins {
-  disablePlugin: ReturnType<typeof vi.fn>;
-}
-
-interface MockVault {
-  getRoot(): unknown;
-}
-
-interface MockWorkspace {
-  getLeavesOfType: ReturnType<typeof vi.fn>;
-  on: ReturnType<typeof vi.fn>;
-}
-
-interface PluginPrivateMethods {
-  handleFileMenuEvent(menu: unknown, file: unknown): void;
-  initFileExplorerView(): Promise<void>;
-  onLayoutReady(): Promise<void>;
-  openContextMenu(ev: unknown, el: unknown): Promise<void>;
-  openFileContextMenu(next: unknown, view: unknown, event: unknown, el: unknown): void;
-  reloadFileExplorer(): Promise<void>;
-}
-
-interface RetryParams {
-  operationFn(abortSignal: AbortSignal): boolean | PromiseLike<boolean>;
-}
-
-const PluginBaseMock = vi.hoisted(() =>
-  class {
-    public app: unknown;
-    public consoleDebugComponent = { consoleDebug: vi.fn() };
-    public manifest: unknown;
-    private readonly addedChildren: Component[] = [];
-    private readonly domEventHandlers: DomEventHandlerEntry[] = [];
-    private readonly eventHandlers: unknown[] = [];
-    private readonly unloadCallbacks: (() => unknown)[] = [];
-
-    public constructor(app: unknown, manifest: unknown) {
-      this.app = app;
-      this.manifest = manifest;
-    }
-
-    public addChild<T extends Component>(child: T): T {
-      this.addedChildren.push(child);
-      return child;
-    }
-
-    public register(callback: () => unknown): void {
-      this.unloadCallbacks.push(callback);
-    }
-
-    public registerDomEvent(element: unknown, event: string, handler: (...args: unknown[]) => unknown): void {
-      this.domEventHandlers.push({ element, event, handler });
-    }
-
-    public registerEvent(ref: unknown): void {
-      this.eventHandlers.push(ref);
-    }
-  }
-);
-
-vi.mock('obsidian-dev-utils/obsidian/plugin/plugin', () => ({
-  PluginBase: PluginBaseMock
-}));
-
-vi.mock('obsidian-dev-utils/async', () => ({
-  convertAsyncToSync: (fn: (...args: unknown[]) => Promise<unknown>): typeof fn => fn,
-  retryWithTimeout: vi.fn()
-}));
-
-vi.mock('obsidian-dev-utils/object-utils', () => ({
-  castTo: (value: unknown): unknown => value,
-  getPrototypeOf: vi.fn((obj: unknown) => Object.getPrototypeOf(obj as object))
-}));
-
-const { mockCallbackLayoutReadyComponent, mockRegisterPatch } = vi.hoisted(() => ({
-  mockCallbackLayoutReadyComponent: vi.fn(),
-  mockRegisterPatch: vi.fn()
-}));
-
-vi.mock('obsidian-dev-utils/obsidian/components/monkey-around-component', () => ({
-  MonkeyAroundComponent: class {
-    public registerPatch = mockRegisterPatch;
-  }
-}));
-
-vi.mock('obsidian-dev-utils/obsidian/components/layout-ready-component', () => ({
-  CallbackLayoutReadyComponent: mockCallbackLayoutReadyComponent
-}));
-
-vi.mock('@obsidian-typings/obsidian-public-latest/implementations', () => ({
-  InternalPluginName: {
-    FileExplorer: 'file-explorer'
-  }
-}));
-
-vi.mock('obsidian', () => {
-  class MockMenu {
-    public items: unknown[] = [];
-  }
-  class MockMenuItem {
-    public titleEl = { textContent: '' };
-  }
-  class MockTAbstractFile {
-    public path = '';
-  }
-  class MockTFolder extends MockTAbstractFile {
-    public isRoot(): boolean {
-      return false;
-    }
-  }
-  return {
-    Component: vi.fn(),
-    Menu: MockMenu,
-    MenuItem: MockMenuItem,
-    Notice: vi.fn(),
-    TAbstractFile: MockTAbstractFile,
-    TFolder: MockTFolder
-  };
-});
-
-// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import {
-  MenuItem,
-  TFolder
-} from 'obsidian';
-// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { retryWithTimeout } from 'obsidian-dev-utils/async';
-
-// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { Plugin } from './plugin.ts';
 
-// eslint-disable-next-line no-restricted-syntax -- Mocked class with public constructor needs double assertion.
-const MenuItemConstructor = MenuItem as unknown as new () => MenuItem;
+const PLUGIN_ID = 'root-folder-context-menu';
+const STRICT_PROXY_TARGET_SYMBOL = Symbol.for('strictProxyTarget');
 
-function asPrivate(p: Plugin): PluginPrivateMethods {
-  // eslint-disable-next-line no-restricted-syntax -- Accessing private methods for testing needs double assertion.
-  return p as unknown as PluginPrivateMethods;
+interface AppGlobal {
+  app: AppType;
 }
 
-function createMenuItem(): MenuItem {
-  return new MenuItemConstructor();
+interface FileExplorerLeafLike {
+  loadIfDeferred(): Promise<void>;
+  view: FileExplorerViewLike;
 }
 
-function createMockApp(): MockApp {
-  return {
-    internalPlugins: {
-      getEnabledPluginById: vi.fn()
-    },
-    plugins: {
-      disablePlugin: vi.fn().mockResolvedValue(undefined)
-    },
-    vault: {
-      getRoot: vi.fn().mockReturnValue({ path: '/' })
-    },
-    workspace: {
-      getLeavesOfType: vi.fn().mockReturnValue([]),
-      on: vi.fn().mockReturnValue({ id: 'event-ref' })
-    }
-  };
+interface FileExplorerPluginInstanceLike {
+  plugin: FileExplorerPlugin;
 }
 
-function createMockFileExplorerPlugin(): MockFileExplorerPlugin {
-  return {
-    disable: vi.fn(),
-    enable: vi.fn().mockResolvedValue(undefined)
-  };
+interface FileExplorerViewLike {
+  files: Map<unknown, unknown>;
+  openFileContextMenu(event: Event, fileItemElement: HTMLElement): void;
 }
 
-function setupRetryWithTimeoutToResolveLeaf(workspace: MockWorkspace, mockLeaf: unknown): void {
-  const mockRetryWithTimeout = vi.mocked(retryWithTimeout);
-  mockRetryWithTimeout.mockImplementation(async (params: RetryParams) => {
-    workspace.getLeavesOfType.mockReturnValue([mockLeaf]);
-    await params.operationFn(new AbortController().signal);
-  });
+interface FileItemElements {
+  fileItemElement: HTMLElement;
+  parentElement: HTMLElement;
 }
+
+interface FileLike {
+  path: string;
+}
+
+interface LoadedFlagHolder {
+  loaded__: boolean;
+}
+
+interface MenuItemWithTitle {
+  titleEl: TitleElement;
+}
+
+interface PluginPrivate {
+  fileExplorerView?: FileExplorerViewLike;
+  handleFileMenuEvent(menu: Menu, file: FileLike): void;
+  onLayoutReady(): Promise<void>;
+  openContextMenu(ev: Event, vaultSwitcherEl: HTMLElement): Promise<void>;
+  openFileContextMenu(next: (event: Event, fileItemElement: HTMLElement) => void, view: FileExplorerViewLike, event: Event, fileItemElement: HTMLElement): void;
+}
+
+interface TitleElement {
+  textContent: string;
+}
+
+const manifest = castTo<PluginManifest>({ id: PLUGIN_ID });
+
+let app: AppType;
+let appMock: App;
+let savedGlobalApp: AppType;
+let capturedLayoutReadyCallback: (() => void) | undefined;
+let disablePluginMock: ReturnType<typeof vi.fn>;
+let getEnabledPluginByIdMock: ReturnType<typeof vi.fn>;
+let getLeavesOfTypeMock: ReturnType<typeof vi.fn>;
+let workspaceOnMock: ReturnType<typeof vi.fn>;
 
 describe('Plugin', () => {
-  let plugin: Plugin;
-  let mockApp: MockApp;
-
   beforeEach(() => {
     vi.clearAllMocks();
-    mockApp = createMockApp();
-    plugin = new Plugin(castTo<App>(mockApp), castTo<PluginManifest>({ id: 'root-folder-context-menu' }));
+    capturedLayoutReadyCallback = undefined;
+    appMock = App.createConfigured__();
+    app = appMock.asOriginalType__();
+
+    // The real PluginBase children read dev-utils state off the app (and the global app).
+    seedOnRawTarget(app, 'obsidianDevUtilsState', {});
+
+    disablePluginMock = vi.fn().mockResolvedValue(undefined);
+    getEnabledPluginByIdMock = vi.fn();
+    getLeavesOfTypeMock = vi.fn().mockReturnValue([]);
+    workspaceOnMock = vi.fn().mockReturnValue(castTo<EventRef>({}));
+
+    seedOnRawTarget(app, 'internalPlugins', { getEnabledPluginById: getEnabledPluginByIdMock });
+    seedOnRawTarget(app, 'plugins', { disablePlugin: disablePluginMock });
+    seedOnRawTarget(app.workspace, 'getLeavesOfType', getLeavesOfTypeMock);
+    seedOnRawTarget(app.workspace, 'on', workspaceOnMock);
+    seedOnRawTarget(app.workspace, 'onLayoutReady', (callback: () => void) => {
+      capturedLayoutReadyCallback = callback;
+    });
+
+    savedGlobalApp = castTo<AppGlobal>(window).app;
+    castTo<AppGlobal>(window).app = app;
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it('should extend PluginBase', () => {
-    expect(plugin).toBeInstanceOf(PluginBaseMock);
+    castTo<AppGlobal>(window).app = savedGlobalApp;
+    while (activeDocument.body.firstChild) {
+      activeDocument.body.firstChild.remove();
+    }
   });
 
   describe('onLayoutReady', () => {
-    it('should disable plugin when File Explorer is disabled', async () => {
-      mockApp.internalPlugins.getEnabledPluginById.mockReturnValue(null);
+    it('should disable the plugin when the File Explorer plugin is disabled', async () => {
+      getEnabledPluginByIdMock.mockReturnValue(null);
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(noop);
 
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-
-      await asPrivate(plugin).onLayoutReady();
+      const plugin = await createLoadedPlugin();
+      await fireLayoutReady();
+      await unloadPlugin(plugin);
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('File Explorer plugin is disabled. Disabling the plugin...');
-      expect(mockApp.plugins.disablePlugin).toHaveBeenCalledWith('root-folder-context-menu');
+      expect(disablePluginMock).toHaveBeenCalledWith(PLUGIN_ID);
     });
 
-    it('should initialize file explorer and register patches when plugin is available', async () => {
-      const mockFileExplorerView = {
-        files: new Map(),
-        openFileContextMenu: vi.fn()
-      };
-      const mockLeaf = {
-        loadIfDeferred: vi.fn().mockResolvedValue(undefined),
-        view: mockFileExplorerView
-      };
+    it('should disable the plugin when the File Explorer view cannot be initialized', async () => {
+      const leaf = createLeaf();
+      leaf.loadIfDeferred = vi.fn().mockRejectedValue(new Error('boom'));
+      getEnabledPluginByIdMock.mockReturnValue(createFileExplorerPluginInstance());
+      getLeavesOfTypeMock.mockReturnValue([leaf]);
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(noop);
 
-      mockApp.internalPlugins.getEnabledPluginById.mockReturnValue({
-        plugin: createMockFileExplorerPlugin()
-      });
+      const plugin = await createLoadedPlugin();
+      await fireLayoutReady();
+      await unloadPlugin(plugin);
 
-      setupRetryWithTimeoutToResolveLeaf(mockApp.workspace, mockLeaf);
-
-      vi.stubGlobal('activeDocument', {
-        body: { click: vi.fn() },
-        querySelector: vi.fn().mockReturnValue(null)
-      });
-
-      await asPrivate(plugin).onLayoutReady();
-
-      expect(mockRegisterPatch).toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(disablePluginMock).toHaveBeenCalledWith(PLUGIN_ID);
     });
 
-    it('should invoke openFileContextMenu factory with next function when registerPatch is called', async () => {
-      const mockFileExplorerView = {
-        files: new Map(),
-        openFileContextMenu: vi.fn()
-      };
-      const mockLeaf = {
-        loadIfDeferred: vi.fn().mockResolvedValue(undefined),
-        view: mockFileExplorerView
-      };
+    it('should patch openFileContextMenu and reload the file explorer when the view is available', async () => {
+      const view = createFileExplorerView();
+      const originalOpenFileContextMenu = view.openFileContextMenu;
+      const leaf = createLeaf(view);
+      const fileExplorerPlugin = createFileExplorerPlugin();
+      getEnabledPluginByIdMock.mockReturnValue({ plugin: fileExplorerPlugin });
+      getLeavesOfTypeMock.mockReturnValue([leaf]);
 
-      mockApp.internalPlugins.getEnabledPluginById.mockReturnValue({
-        plugin: createMockFileExplorerPlugin()
-      });
+      const plugin = await createLoadedPlugin();
+      await fireLayoutReady();
 
-      setupRetryWithTimeoutToResolveLeaf(mockApp.workspace, mockLeaf);
+      // The real MonkeyAroundComponent replaced the prototype method with the plugin's wrapper.
+      expect(view.openFileContextMenu).not.toBe(originalOpenFileContextMenu);
+      expect(fileExplorerPlugin.disable).toHaveBeenCalled();
+      expect(fileExplorerPlugin.enable).toHaveBeenCalled();
+      expect(workspaceOnMock).toHaveBeenCalledWith('file-menu', expect.any(Function));
 
-      vi.stubGlobal('activeDocument', {
-        body: { click: vi.fn() },
-        querySelector: vi.fn().mockReturnValue(null)
-      });
-
-      await asPrivate(plugin).onLayoutReady();
-
-      const [, patches] = mockRegisterPatch.mock.calls[0] as [unknown, Record<string, (next: (...args: unknown[]) => unknown) => unknown>];
-      const factory = patches['openFileContextMenu'];
-      assertNonNullable(factory);
-      expect(factory).toBeTypeOf('function');
-
-      const mockNext = vi.fn();
-      const result = factory(mockNext);
-      expect(result).toBeTypeOf('function');
-
-      vi.unstubAllGlobals();
+      await unloadPlugin(plugin);
     });
 
-    it('should return early when file explorer view cannot be initialized', async () => {
-      mockApp.internalPlugins.getEnabledPluginById.mockReturnValue({
-        plugin: createMockFileExplorerPlugin()
+    it('should retry initializing the view until a file explorer leaf becomes available', async () => {
+      const RETRY_WAIT_IN_MILLISECONDS = 250;
+      const view = createFileExplorerView();
+      const originalOpenFileContextMenu = view.openFileContextMenu;
+      const leaf = createLeaf(view);
+      getEnabledPluginByIdMock.mockReturnValue({ plugin: createFileExplorerPlugin() });
+      // The first lookup finds no leaf (operationFn returns false), so retryWithTimeout retries.
+      getLeavesOfTypeMock.mockReturnValueOnce([]).mockReturnValue([leaf]);
+
+      const plugin = await createLoadedPlugin();
+      capturedLayoutReadyCallback?.();
+      await new Promise<void>((resolve) => {
+        window.setTimeout(resolve, RETRY_WAIT_IN_MILLISECONDS);
       });
+      await flush();
 
-      const mockRetryWithTimeout = vi.mocked(retryWithTimeout);
-      mockRetryWithTimeout.mockResolvedValue(undefined);
+      expect(getLeavesOfTypeMock.mock.calls.length).toBeGreaterThan(1);
+      // The retry eventually resolved the view, so the prototype patch was installed.
+      expect(view.openFileContextMenu).not.toBe(originalOpenFileContextMenu);
 
-      await asPrivate(plugin).onLayoutReady();
-
-      expect(mockRegisterPatch).not.toHaveBeenCalled();
+      await unloadPlugin(plugin);
     });
 
-    it('should register vault switcher context menu when element exists', async () => {
-      const mockFileExplorerView = {
-        files: new Map(),
-        openFileContextMenu: vi.fn()
-      };
-      const mockLeaf = {
-        loadIfDeferred: vi.fn().mockResolvedValue(undefined),
-        view: mockFileExplorerView
-      };
+    it('should wire the vault switcher and nav files container context menus when present', async () => {
+      const view = createFileExplorerView();
+      const leaf = createLeaf(view);
+      getEnabledPluginByIdMock.mockReturnValue({ plugin: createFileExplorerPlugin() });
+      getLeavesOfTypeMock.mockReturnValue([leaf]);
 
-      mockApp.internalPlugins.getEnabledPluginById.mockReturnValue({
-        plugin: createMockFileExplorerPlugin()
-      });
+      const vaultSwitcherEl = appendElement('workspace-drawer-vault-switcher');
+      const navFilesContainerEl = appendElement('nav-files-container');
 
-      setupRetryWithTimeoutToResolveLeaf(mockApp.workspace, mockLeaf);
+      const plugin = await createLoadedPlugin();
+      await fireLayoutReady();
 
-      const mockVaultSwitcherEl = { childNodes: [{}] };
-      const mockNavFilesContainerEl = {};
+      expect(view.files.get(vaultSwitcherEl)).toBe(app.vault.getRoot());
+      expect(navFilesContainerEl).toBeInstanceOf(HTMLElement);
 
-      vi.stubGlobal('activeDocument', {
-        body: { click: vi.fn() },
-        querySelector: vi.fn().mockImplementation((selector: string) => {
-          if (selector === '.workspace-drawer-vault-switcher') {
-            return mockVaultSwitcherEl;
-          }
-          if (selector === '.nav-files-container') {
-            return mockNavFilesContainerEl;
-          }
-          return null;
-        })
-      });
-
-      await asPrivate(plugin).onLayoutReady();
-
-      expect(mockFileExplorerView.files.get(mockVaultSwitcherEl)).toBe(mockApp.vault.getRoot());
-      expect(mockApp.workspace.on).toHaveBeenCalledWith('file-menu', expect.any(Function));
+      await unloadPlugin(plugin);
     });
 
-    it('should handle vault switcher without nav files container', async () => {
-      const mockFileExplorerView = {
-        files: new Map(),
-        openFileContextMenu: vi.fn()
-      };
-      const mockLeaf = {
-        loadIfDeferred: vi.fn().mockResolvedValue(undefined),
-        view: mockFileExplorerView
-      };
+    it('should wire only the vault switcher when the nav files container is absent', async () => {
+      const view = createFileExplorerView();
+      const leaf = createLeaf(view);
+      getEnabledPluginByIdMock.mockReturnValue({ plugin: createFileExplorerPlugin() });
+      getLeavesOfTypeMock.mockReturnValue([leaf]);
 
-      mockApp.internalPlugins.getEnabledPluginById.mockReturnValue({
-        plugin: createMockFileExplorerPlugin()
-      });
+      const vaultSwitcherEl = appendElement('workspace-drawer-vault-switcher');
 
-      setupRetryWithTimeoutToResolveLeaf(mockApp.workspace, mockLeaf);
+      const plugin = await createLoadedPlugin();
+      await fireLayoutReady();
 
-      const mockVaultSwitcherEl = { childNodes: [{}] };
+      expect(view.files.get(vaultSwitcherEl)).toBe(app.vault.getRoot());
 
-      vi.stubGlobal('activeDocument', {
-        body: { click: vi.fn() },
-        querySelector: vi.fn().mockImplementation((selector: string) => {
-          if (selector === '.workspace-drawer-vault-switcher') {
-            return mockVaultSwitcherEl;
-          }
-          return null;
-        })
-      });
-
-      await asPrivate(plugin).onLayoutReady();
-
-      expect(mockFileExplorerView.files.get(mockVaultSwitcherEl)).toBe(mockApp.vault.getRoot());
+      await unloadPlugin(plugin);
     });
   });
 
   describe('handleFileMenuEvent', () => {
-    it('should not filter menu items for non-root files', () => {
-      const menu = { items: [createMenuItem()] };
-      const file = { path: 'some/path' };
+    it('should not filter menu items for non-root files', async () => {
+      const plugin = await createLoadedPlugin();
+      const item = createMenuItem('Some action');
+      const menu = castTo<Menu>({ items: [item] });
 
-      asPrivate(plugin).handleFileMenuEvent(menu, file);
+      castTo<PluginPrivate>(plugin).handleFileMenuEvent(menu, { path: 'some/path' });
 
       expect(menu.items).toHaveLength(1);
+      await unloadPlugin(plugin);
     });
 
-    it('should filter root-specific menu items for root folder', () => {
-      vi.stubGlobal('activeWindow', {
-        i18next: {
-          t: vi.fn().mockImplementation((key: string) => `translated-${key}`)
-        }
-      });
+    it('should filter root-specific menu items for the root folder', async () => {
+      stubI18Next();
+      const plugin = await createLoadedPlugin();
+      const rootItem = createMenuItem('translated-plugins.file-explorer.menu-opt-rename');
+      const otherItem = createMenuItem('Some other action');
+      const menu = castTo<Menu>({ items: [rootItem, otherItem] });
 
-      const rootMenuItem = createMenuItem();
-      // eslint-disable-next-line obsidianmd/ui/sentence-case -- Mock translation key, not UI text.
-      rootMenuItem.titleEl.textContent = 'translated-plugins.file-explorer.menu-opt-rename';
-      const nonRootMenuItem = createMenuItem();
-      nonRootMenuItem.titleEl.textContent = 'Some other action';
-
-      const menu = { items: [rootMenuItem, nonRootMenuItem] };
-      const file = { path: '/' };
-
-      asPrivate(plugin).handleFileMenuEvent(menu, file);
+      castTo<PluginPrivate>(plugin).handleFileMenuEvent(menu, { path: '/' });
 
       expect(menu.items).toHaveLength(1);
-      expect(menu.items[0]).toBe(nonRootMenuItem);
-
+      expect(menu.items[0]).toBe(otherItem);
       vi.unstubAllGlobals();
+      await unloadPlugin(plugin);
     });
 
-    it('should keep non-MenuItem items in the menu for root folder', () => {
-      vi.stubGlobal('activeWindow', {
-        i18next: {
-          t: vi.fn().mockReturnValue('translated')
-        }
-      });
+    it('should keep non-MenuItem entries in the menu for the root folder', async () => {
+      stubI18Next();
+      const plugin = await createLoadedPlugin();
+      const nonMenuItemEntry = castTo<MenuItemType>({ titleEl: { textContent: 'translated-plugins.file-explorer.menu-opt-rename' } });
+      const menu = castTo<Menu>({ items: [nonMenuItemEntry] });
 
-      const nonMenuItemEntry = { titleEl: { textContent: 'translated' } };
-      const menu = { items: [nonMenuItemEntry] };
-      const file = { path: '/' };
-
-      asPrivate(plugin).handleFileMenuEvent(menu, file);
+      castTo<PluginPrivate>(plugin).handleFileMenuEvent(menu, { path: '/' });
 
       expect(menu.items).toHaveLength(1);
-
       vi.unstubAllGlobals();
+      await unloadPlugin(plugin);
     });
   });
 
   describe('openFileContextMenu', () => {
-    it('should return early when parent element is not HTMLElement', () => {
-      vi.stubGlobal('HTMLElement', Object);
-
+    it('should return early when the parent element is not an HTMLElement', async () => {
+      const plugin = await createLoadedPlugin();
       const next = vi.fn();
-      const view = { files: new Map() };
-      const event = {};
-      const fileItemElement = { parentElement: null };
+      const view = createFileExplorerView();
+      const fileItemElement = activeDocument.createElement('div');
 
-      asPrivate(plugin).openFileContextMenu(next, view, event, fileItemElement);
+      castTo<PluginPrivate>(plugin).openFileContextMenu(next, view, new Event('contextmenu'), fileItemElement);
 
       expect(next).not.toHaveBeenCalled();
-
-      vi.unstubAllGlobals();
+      await unloadPlugin(plugin);
     });
 
-    it('should call next directly for non-root folders', () => {
+    it('should call next directly for non-folder files', async () => {
+      const plugin = await createLoadedPlugin();
       const next = vi.fn();
-      const parentEl = {};
-      const nonRootFolder = { isRoot: (): boolean => false, path: 'some-folder' };
-      const view = { files: new Map([[parentEl, nonRootFolder]]) };
-      const event = {};
-      const fileItemElement = { parentElement: parentEl };
+      const { fileItemElement, parentElement } = createFileItemElements();
+      const view = createFileExplorerView();
+      view.files.set(parentElement, { path: 'test.md' });
+      const event = new Event('contextmenu');
 
-      vi.stubGlobal('HTMLElement', Object);
-
-      asPrivate(plugin).openFileContextMenu(next, view, event, fileItemElement);
+      castTo<PluginPrivate>(plugin).openFileContextMenu(next, view, event, fileItemElement);
 
       expect(next).toHaveBeenCalledWith(event, fileItemElement);
-
-      vi.unstubAllGlobals();
+      await unloadPlugin(plugin);
     });
 
-    it('should temporarily patch isRoot for root folder and call next', () => {
+    it('should call next directly for non-root folders', async () => {
+      const plugin = await createLoadedPlugin();
       const next = vi.fn();
-      const parentEl = {};
-      const rootFolder = new TFolder();
-      rootFolder.isRoot = (): boolean => true;
-      Object.defineProperty(rootFolder, 'path', { value: '/' });
+      const { fileItemElement, parentElement } = createFileItemElements();
+      const view = createFileExplorerView();
+      view.files.set(parentElement, TFolder.create__(appMock.vault, 'some-folder'));
+      const event = new Event('contextmenu');
 
-      const view = { files: new Map([[parentEl, rootFolder]]) };
-      const event = {};
-      const fileItemElement = { parentElement: parentEl };
+      castTo<PluginPrivate>(plugin).openFileContextMenu(next, view, event, fileItemElement);
 
-      vi.stubGlobal('HTMLElement', Object);
+      expect(next).toHaveBeenCalledWith(event, fileItemElement);
+      await unloadPlugin(plugin);
+    });
 
-      let isRootDuringCall: boolean | undefined;
+    it('should temporarily report the root folder as non-root while calling next', async () => {
+      const plugin = await createLoadedPlugin();
+      const next = vi.fn();
+      const { fileItemElement, parentElement } = createFileItemElements();
+      const rootFolder = castTo<TFolderType>(app.vault.getRoot());
+      const view = createFileExplorerView();
+      view.files.set(parentElement, rootFolder);
+
+      let isRootDuringNext: boolean | undefined;
       next.mockImplementation(() => {
-        isRootDuringCall = rootFolder.isRoot();
+        isRootDuringNext = rootFolder.isRoot();
       });
 
-      asPrivate(plugin).openFileContextMenu(next, view, event, fileItemElement);
+      castTo<PluginPrivate>(plugin).openFileContextMenu(next, view, new Event('contextmenu'), fileItemElement);
 
-      expect(isRootDuringCall).toBe(false);
+      expect(isRootDuringNext).toBe(false);
       expect(rootFolder.isRoot()).toBe(true);
-
-      vi.unstubAllGlobals();
-    });
-
-    it('should call next directly for non-TFolder files', () => {
-      const next = vi.fn();
-      const parentEl = {};
-      const regularFile = { path: 'test.md' };
-      const view = { files: new Map([[parentEl, regularFile]]) };
-      const event = {};
-      const fileItemElement = { parentElement: parentEl };
-
-      vi.stubGlobal('HTMLElement', Object);
-
-      asPrivate(plugin).openFileContextMenu(next, view, event, fileItemElement);
-
-      expect(next).toHaveBeenCalledWith(event, fileItemElement);
-
-      vi.unstubAllGlobals();
-    });
-  });
-
-  describe('initFileExplorerView', () => {
-    it('should disable plugin when FileExplorerView initialization fails', async () => {
-      const mockRetryWithTimeout = vi.mocked(retryWithTimeout);
-      mockRetryWithTimeout.mockRejectedValue(new Error('Timeout'));
-
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-
-      await asPrivate(plugin).initFileExplorerView();
-
-      expect(consoleErrorSpy).toHaveBeenCalled();
-      expect(mockApp.plugins.disablePlugin).toHaveBeenCalledWith('root-folder-context-menu');
-    });
-
-    it('should set fileExplorerView when leaf is found', async () => {
-      const mockView = { files: new Map() };
-      const mockLeaf = {
-        loadIfDeferred: vi.fn().mockResolvedValue(undefined),
-        view: mockView
-      };
-
-      mockApp.workspace.getLeavesOfType.mockReturnValue([mockLeaf]);
-
-      const mockRetryWithTimeout = vi.mocked(retryWithTimeout);
-      mockRetryWithTimeout.mockImplementation(async (params: RetryParams) => {
-        const result = await params.operationFn(new AbortController().signal);
-        expect(result).toBe(true);
-      });
-
-      await asPrivate(plugin).initFileExplorerView();
-
-      expect(mockLeaf.loadIfDeferred).toHaveBeenCalled();
-    });
-
-    it('should return false from operationFn when leaf is not found', async () => {
-      mockApp.workspace.getLeavesOfType.mockReturnValue([]);
-
-      const mockRetryWithTimeout = vi.mocked(retryWithTimeout);
-      mockRetryWithTimeout.mockImplementation(async (params: RetryParams) => {
-        const result = await params.operationFn(new AbortController().signal);
-        expect(result).toBe(false);
-      });
-
-      await asPrivate(plugin).initFileExplorerView();
+      await unloadPlugin(plugin);
     });
   });
 
   describe('openContextMenu', () => {
-    it('should call openFileContextMenu after delay', async () => {
-      vi.useFakeTimers();
-      vi.stubGlobal('activeDocument', { body: { click: vi.fn() } });
+    it('should click the body and open the context menu after the delay', async () => {
       vi.stubGlobal('sleep', vi.fn().mockResolvedValue(undefined));
+      const bodyClickSpy = vi.spyOn(activeDocument.body, 'click');
+      const plugin = await createLoadedPlugin();
 
-      const mockOpenFileContextMenu = vi.fn();
-      const childNode = {};
+      const openFileContextMenuMock = vi.fn();
+      const childNode = activeDocument.createElement('span');
+      const vaultSwitcherEl = activeDocument.createElement('div');
+      vaultSwitcherEl.appendChild(childNode);
+      castTo<PluginPrivate>(plugin).fileExplorerView = castTo<FileExplorerViewLike>({ openFileContextMenu: openFileContextMenuMock });
 
-      Object.defineProperty(plugin, 'fileExplorerView', {
-        value: { openFileContextMenu: mockOpenFileContextMenu },
-        writable: true
-      });
+      const event = new Event('contextmenu');
+      await castTo<PluginPrivate>(plugin).openContextMenu(event, vaultSwitcherEl);
 
-      const vaultSwitcherEl = { childNodes: [childNode] };
-      const ev = {};
+      expect(bodyClickSpy).toHaveBeenCalled();
+      expect(openFileContextMenuMock).toHaveBeenCalledWith(event, childNode);
 
-      await asPrivate(plugin).openContextMenu(ev, vaultSwitcherEl);
-
-      expect(activeDocument.body.click).toHaveBeenCalled();
-      expect(mockOpenFileContextMenu).toHaveBeenCalledWith(ev, childNode);
-
-      vi.useRealTimers();
       vi.unstubAllGlobals();
-    });
-  });
-
-  describe('reloadFileExplorer', () => {
-    it('should disable and re-enable file explorer', async () => {
-      const mockDisable = vi.fn();
-      const mockEnable = vi.fn().mockResolvedValue(undefined);
-
-      Object.defineProperty(plugin, 'fileExplorerPlugin', {
-        value: { disable: mockDisable, enable: mockEnable },
-        writable: true
-      });
-
-      const mockRetryWithTimeout = vi.mocked(retryWithTimeout);
-      mockRetryWithTimeout.mockResolvedValue(undefined);
-
-      await asPrivate(plugin).reloadFileExplorer();
-
-      expect(mockDisable).toHaveBeenCalled();
-      expect(mockEnable).toHaveBeenCalled();
+      await unloadPlugin(plugin);
     });
   });
 });
+
+function appendElement(className: string): HTMLElement {
+  const element = activeDocument.createElement('div');
+  element.className = className;
+  activeDocument.body.appendChild(element);
+  return element;
+}
+
+function createFileExplorerPlugin(): FileExplorerPlugin {
+  return castTo<FileExplorerPlugin>({
+    disable: vi.fn(),
+    enable: vi.fn().mockResolvedValue(undefined)
+  });
+}
+
+function createFileExplorerPluginInstance(): FileExplorerPluginInstanceLike {
+  return { plugin: createFileExplorerPlugin() };
+}
+
+function createFileExplorerView(): FileExplorerViewLike {
+  // A dedicated class gives the view its own prototype.
+  // The real MonkeyAroundComponent then patches that prototype instead of Object.prototype.
+  class FakeFileExplorerView {
+    public files = new Map();
+    public openFileContextMenu(_event: Event, _fileItemElement: HTMLElement): void {
+      noop();
+    }
+  }
+  return new FakeFileExplorerView();
+}
+
+function createFileItemElements(): FileItemElements {
+  const parentElement = activeDocument.createElement('div');
+  const fileItemElement = activeDocument.createElement('div');
+  parentElement.appendChild(fileItemElement);
+  return { fileItemElement, parentElement };
+}
+
+function createLeaf(view = createFileExplorerView()): FileExplorerLeafLike {
+  return {
+    loadIfDeferred: vi.fn().mockResolvedValue(undefined),
+    view
+  };
+}
+
+async function createLoadedPlugin(): Promise<Plugin> {
+  const plugin = new Plugin(app, manifest);
+  // PluginBase.onload is async; driving it directly runs onloadImpl and eager-loads the real children.
+  await plugin.onload();
+  return plugin;
+}
+
+function createMenuItem(textContent: string): MenuItemType {
+  const item = castTo<MenuItemWithTitle>(MenuItem.create__(castTo<Menu>({})));
+  item.titleEl = { textContent };
+  return castTo<MenuItemType>(item);
+}
+
+async function fireLayoutReady(): Promise<void> {
+  if (!capturedLayoutReadyCallback) {
+    throw new Error('Layout-ready callback was not captured.');
+  }
+  // CallbackLayoutReadyComponent.onload registers this callback; it schedules a setTimeout(0) that invokes onLayoutReady.
+  capturedLayoutReadyCallback();
+  await flush();
+}
+
+async function flush(): Promise<void> {
+  const FLUSH_ITERATIONS = 10;
+  for (let i = 0; i < FLUSH_ITERATIONS; i++) {
+    await new Promise<void>((resolve) => {
+      window.setTimeout(resolve, 0);
+    });
+    await noopAsync();
+  }
+}
+
+function seedOnRawTarget(strictProxiedObject: object, key: string, value: unknown): void {
+  const rawTarget = castTo<object | undefined>(Reflect.get(strictProxiedObject, STRICT_PROXY_TARGET_SYMBOL)) ?? strictProxiedObject;
+  Reflect.set(rawTarget, key, value);
+}
+
+function stubI18Next(): void {
+  vi.stubGlobal('activeWindow', {
+    i18next: {
+      t: (key: string): string => `translated-${key}`
+    }
+  });
+}
+
+async function unloadPlugin(plugin: Plugin): Promise<void> {
+  // The onload() lifecycle was driven directly (not load()).
+  // Flip the real loaded flag so unload() flushes registered cleanups and removes the prototype patch.
+  castTo<LoadedFlagHolder>(plugin).loaded__ = true;
+  plugin.unload();
+  await flush();
+}

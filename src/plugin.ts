@@ -19,15 +19,17 @@ import { getPrototypeOf } from 'obsidian-dev-utils/object-utils';
 import { CallbackLayoutReadyComponent } from 'obsidian-dev-utils/obsidian/components/layout-ready-component';
 import { MonkeyAroundComponent } from 'obsidian-dev-utils/obsidian/components/monkey-around-component';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/plugin/plugin';
+import { ensureNonNullable } from 'obsidian-dev-utils/type-guards';
+import { ValueWrapper } from 'obsidian-dev-utils/value-wrapper';
 
 type OpenFileContextMenuFn = FileExplorerView['openFileContextMenu'];
 
 export class Plugin extends PluginBase {
   private fileExplorerPlugin?: FileExplorerPlugin;
   private fileExplorerView?: FileExplorerView;
-  private monkeyAroundComponent!: MonkeyAroundComponent;
+  private monkeyAroundComponent?: MonkeyAroundComponent;
 
- protected override onloadImpl(): void {
+  protected override onloadImpl(): void {
     this.monkeyAroundComponent = this.addChild(new MonkeyAroundComponent());
     this.addChild(new CallbackLayoutReadyComponent(this.app, this.onLayoutReady.bind(this)));
   }
@@ -97,7 +99,7 @@ export class Plugin extends PluginBase {
     const viewPrototype = getPrototypeOf(this.fileExplorerView);
 
     const thisWrapper = ValueWrapper.of(this);
-    this.monkeyAroundComponent.registerPatch(viewPrototype, {
+    ensureNonNullable(this.monkeyAroundComponent).registerPatch(viewPrototype, {
       openFileContextMenu: (next: OpenFileContextMenuFn) => {
         /* v8 ignore start -- runtime-only callback invoked by Obsidian's monkey-patch system. */
         return function openFileContextMenuPatched(this: FileExplorerView, event: Event, fileItemElement: HTMLElement): void {
