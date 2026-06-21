@@ -8,10 +8,8 @@ import type {
   TFolder as TFolderType
 } from 'obsidian';
 
-import {
-  noop,
-  noopAsync
-} from 'obsidian-dev-utils/function';
+import { waitForAllAsyncOperations } from 'obsidian-dev-utils/async';
+import { noop } from 'obsidian-dev-utils/function';
 import { castTo } from 'obsidian-dev-utils/object-utils';
 import {
   App,
@@ -173,7 +171,6 @@ describe('Plugin', () => {
     });
 
     it('should retry initializing the view until a file explorer leaf becomes available', async () => {
-      const RETRY_WAIT_IN_MILLISECONDS = 250;
       const view = createFileExplorerView();
       const originalOpenFileContextMenu = view.openFileContextMenu;
       const leaf = createLeaf(view);
@@ -182,11 +179,8 @@ describe('Plugin', () => {
       getLeavesOfTypeMock.mockReturnValueOnce([]).mockReturnValue([leaf]);
 
       const plugin = await createLoadedPlugin();
-      capturedLayoutReadyCallback?.();
-      await new Promise<void>((resolve) => {
-        window.setTimeout(resolve, RETRY_WAIT_IN_MILLISECONDS);
-      });
-      await flush();
+      // Draining the tracked onLayoutReady promise waits for retryWithTimeout's real retry loop to complete.
+      await fireLayoutReady();
 
       expect(getLeavesOfTypeMock.mock.calls.length).toBeGreaterThan(1);
       // The retry eventually resolved the view, so the prototype patch was installed.
@@ -418,24 +412,23 @@ async function fireLayoutReady(): Promise<void> {
   if (!capturedLayoutReadyCallback) {
     throw new Error('Layout-ready callback was not captured.');
   }
-  // CallbackLayoutReadyComponent.onload registers this callback; it schedules a setTimeout(0) that invokes onLayoutReady.
+  // CallbackLayoutReadyComponent.onload registers this callback; it schedules a setTimeout(0) that invokes onLayoutReady via the real invokeAsyncSafely.
   capturedLayoutReadyCallback();
-  await flush();
-}
-
-async function flush(): Promise<void> {
-  const FLUSH_ITERATIONS = 10;
-  for (let i = 0; i < FLUSH_ITERATIONS; i++) {
-    await new Promise<void>((resolve) => {
-      window.setTimeout(resolve, 0);
-    });
-    await noopAsync();
-  }
+  await settleAsyncOperations();
 }
 
 function seedOnRawTarget(strictProxiedObject: object, key: string, value: unknown): void {
   const rawTarget = castTo<object | undefined>(Reflect.get(strictProxiedObject, STRICT_PROXY_TARGET_SYMBOL)) ?? strictProxiedObject;
   Reflect.set(rawTarget, key, value);
+}
+
+async function settleAsyncOperations(): Promise<void> {
+  // The LayoutReadyComponent guard (window.setTimeout(0)) is a plain timer, so let it fire to schedule onLayoutReady via the real invokeAsyncSafely.
+  await new Promise<void>((resolve) => {
+    window.setTimeout(resolve, 0);
+  });
+  // Async-operation tracking then drains the tracked onLayoutReady promise (including its internal retryWithTimeout retries) deterministically.
+  await waitForAllAsyncOperations();
 }
 
 function stubI18Next(): void {
@@ -451,5 +444,5 @@ async function unloadPlugin(plugin: Plugin): Promise<void> {
   // Flip the real loaded flag so unload() flushes registered cleanups and removes the prototype patch.
   castTo<LoadedFlagHolder>(plugin).loaded__ = true;
   plugin.unload();
-  await flush();
+  await settleAsyncOperations();
 }
