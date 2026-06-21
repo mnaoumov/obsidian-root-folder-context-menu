@@ -2,10 +2,6 @@ import type {
   FileExplorerPlugin,
   FileExplorerView
 } from '@obsidian-typings/obsidian-public-latest';
-import type {
-  App,
-  PluginManifest
-} from 'obsidian';
 
 import { InternalPluginName } from '@obsidian-typings/obsidian-public-latest/implementations';
 import {
@@ -29,10 +25,9 @@ type OpenFileContextMenuFn = FileExplorerView['openFileContextMenu'];
 export class Plugin extends PluginBase {
   private fileExplorerPlugin?: FileExplorerPlugin;
   private fileExplorerView?: FileExplorerView;
-  private readonly monkeyAroundComponent: MonkeyAroundComponent;
+  private monkeyAroundComponent!: MonkeyAroundComponent;
 
-  public constructor(app: App, manifest: PluginManifest) {
-    super(app, manifest);
+ protected override onloadImpl(): void {
     this.monkeyAroundComponent = this.addChild(new MonkeyAroundComponent());
     this.addChild(new CallbackLayoutReadyComponent(this.app, this.onLayoutReady.bind(this)));
   }
@@ -101,12 +96,12 @@ export class Plugin extends PluginBase {
 
     const viewPrototype = getPrototypeOf(this.fileExplorerView);
 
-    const that = this;
+    const thisWrapper = ValueWrapper.of(this);
     this.monkeyAroundComponent.registerPatch(viewPrototype, {
       openFileContextMenu: (next: OpenFileContextMenuFn) => {
         /* v8 ignore start -- runtime-only callback invoked by Obsidian's monkey-patch system. */
         return function openFileContextMenuPatched(this: FileExplorerView, event: Event, fileItemElement: HTMLElement): void {
-          that.openFileContextMenu(next, this, event, fileItemElement);
+          thisWrapper.value.openFileContextMenu(next, this, event, fileItemElement);
         };
         /* v8 ignore stop */
       }
