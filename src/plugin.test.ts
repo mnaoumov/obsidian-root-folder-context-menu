@@ -8,7 +8,10 @@ import type {
   TFolder as TFolderType
 } from 'obsidian';
 
-import { waitForAllAsyncOperations } from 'obsidian-dev-utils/async';
+import {
+  sleep,
+  waitForAllAsyncOperations
+} from 'obsidian-dev-utils/async';
 import { noop } from 'obsidian-dev-utils/function';
 import { castTo } from 'obsidian-dev-utils/object-utils';
 import {
@@ -424,9 +427,7 @@ function seedOnRawTarget(strictProxiedObject: object, key: string, value: unknow
 
 async function settleAsyncOperations(): Promise<void> {
   // The LayoutReadyComponent guard (window.setTimeout(0)) is a plain timer, so let it fire to schedule onLayoutReady via the real invokeAsyncSafely.
-  await new Promise<void>((resolve) => {
-    window.setTimeout(resolve, 0);
-  });
+  await sleep(0);
   // Async-operation tracking then drains the tracked onLayoutReady promise (including its internal retryWithTimeout retries) deterministically.
   await waitForAllAsyncOperations();
 }
