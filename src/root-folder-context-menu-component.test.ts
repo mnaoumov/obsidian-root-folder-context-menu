@@ -13,6 +13,7 @@ import {
 import { noop } from 'obsidian-dev-utils/function';
 import { castTo } from 'obsidian-dev-utils/object-utils';
 import { ConsoleDebugComponent } from 'obsidian-dev-utils/obsidian/components/console-debug-component';
+import { PluginNoticeComponent } from 'obsidian-dev-utils/obsidian/components/plugin-notice-component';
 import {
   App,
   MenuItem
@@ -74,6 +75,7 @@ let capturedLayoutReadyCallback: (() => void) | undefined;
 let disablePluginMock: ReturnType<typeof vi.fn>;
 let getEnabledPluginByIdMock: ReturnType<typeof vi.fn>;
 let getLeavesOfTypeMock: ReturnType<typeof vi.fn>;
+let pluginNoticeComponent: PluginNoticeComponent;
 let workspaceOnMock: ReturnType<typeof vi.fn>;
 
 describe('RootFolderContextMenuComponent', () => {
@@ -115,10 +117,12 @@ describe('RootFolderContextMenuComponent', () => {
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(noop);
 
       const component = createLoadedComponent();
+      const showNoticeSpy = vi.spyOn(pluginNoticeComponent, 'showNotice');
       await fireLayoutReady();
       await unloadComponent(component);
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('File Explorer plugin is disabled. Disabling the plugin...');
+      expect(showNoticeSpy).toHaveBeenCalledWith('File Explorer plugin is disabled. Disabling the plugin...');
       expect(disablePluginMock).toHaveBeenCalledWith(PLUGIN_ID);
     });
 
@@ -130,10 +134,12 @@ describe('RootFolderContextMenuComponent', () => {
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(noop);
 
       const component = createLoadedComponent();
+      const showNoticeSpy = vi.spyOn(pluginNoticeComponent, 'showNotice');
       await fireLayoutReady();
       await unloadComponent(component);
 
       expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(showNoticeSpy).toHaveBeenCalledWith('Could not initialize FileExplorerView. Disabling the plugin...');
       expect(disablePluginMock).toHaveBeenCalledWith(PLUGIN_ID);
     });
 
@@ -313,10 +319,12 @@ function createLeaf(view = createFileExplorerView()): FileExplorerLeafLike {
 
 function createLoadedComponent(): RootFolderContextMenuComponent {
   const consoleDebugComponent = new ConsoleDebugComponent(PLUGIN_ID);
+  pluginNoticeComponent = new PluginNoticeComponent(PLUGIN_ID);
   const component = new RootFolderContextMenuComponent({
     app,
     consoleDebugComponent,
-    pluginId: PLUGIN_ID
+    pluginId: PLUGIN_ID,
+    pluginNoticeComponent
   });
   // The real Component.load() flips loaded__/_loaded and runs onload(), which registers the layout-ready handler.
   component.load();

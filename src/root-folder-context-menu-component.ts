@@ -4,12 +4,12 @@ import type {
 } from '@obsidian-typings/obsidian-public-latest';
 import type { App } from 'obsidian';
 import type { ConsoleDebugComponent } from 'obsidian-dev-utils/obsidian/components/console-debug-component';
+import type { PluginNoticeComponent } from 'obsidian-dev-utils/obsidian/components/plugin-notice-component';
 
 import { InternalPluginName } from '@obsidian-typings/obsidian-public-latest/implementations';
 import {
   Menu,
   MenuItem,
-  Notice,
   TAbstractFile
 } from 'obsidian';
 import {
@@ -24,6 +24,7 @@ interface RootFolderContextMenuComponentConstructorParams {
   readonly app: App;
   readonly consoleDebugComponent: ConsoleDebugComponent;
   readonly pluginId: string;
+  readonly pluginNoticeComponent: PluginNoticeComponent;
 }
 
 export class RootFolderContextMenuComponent extends LayoutReadyComponent {
@@ -31,11 +32,13 @@ export class RootFolderContextMenuComponent extends LayoutReadyComponent {
   private fileExplorerPlugin?: FileExplorerPlugin;
   private fileExplorerView?: FileExplorerView;
   private readonly pluginId: string;
+  private readonly pluginNoticeComponent: PluginNoticeComponent;
 
   public constructor(params: RootFolderContextMenuComponentConstructorParams) {
     super(params.app);
     this.consoleDebugComponent = params.consoleDebugComponent;
     this.pluginId = params.pluginId;
+    this.pluginNoticeComponent = params.pluginNoticeComponent;
   }
 
   protected override async onLayoutReady(): Promise<void> {
@@ -91,7 +94,7 @@ export class RootFolderContextMenuComponent extends LayoutReadyComponent {
 
   private async disablePlugin(message: string): Promise<void> {
     console.error(message);
-    new Notice(message);
+    this.pluginNoticeComponent.showNotice(message);
     await this.app.plugins.disablePlugin(this.pluginId);
   }
 
