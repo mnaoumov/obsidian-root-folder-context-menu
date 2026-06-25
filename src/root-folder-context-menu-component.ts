@@ -9,6 +9,7 @@ import { InternalPluginName } from '@obsidian-typings/obsidian-public-latest/imp
 import {
   Menu,
   MenuItem,
+  Notice,
   TAbstractFile
 } from 'obsidian';
 import {
