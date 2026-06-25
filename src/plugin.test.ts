@@ -5,6 +5,7 @@ import type {
 
 import { castTo } from 'obsidian-dev-utils/object-utils';
 import { ConsoleDebugComponent } from 'obsidian-dev-utils/obsidian/components/console-debug-component';
+import { PluginNoticeComponent } from 'obsidian-dev-utils/obsidian/components/plugin-notice-component';
 import { App } from 'obsidian-test-mocks/obsidian';
 import {
   afterEach,
@@ -47,6 +48,7 @@ interface RootFolderContextMenuComponentConstructorParams {
   readonly app: AppType;
   readonly consoleDebugComponent: ConsoleDebugComponent;
   readonly pluginId: string;
+  readonly pluginNoticeComponent: PluginNoticeComponent;
 }
 
 const manifest = castTo<PluginManifest>({ id: PLUGIN_ID });
@@ -75,7 +77,7 @@ describe('Plugin', () => {
     castTo<AppGlobal>(window).app = savedGlobalApp;
   });
 
-  it('should add the root folder context menu component with the app, console debug component, and plugin id', async () => {
+  it('should add the root folder context menu component with the app, console debug component, plugin id, and notice component', async () => {
     const plugin = new Plugin(app, manifest);
     // PluginBase.onload is async; driving it directly runs onloadImpl and eager-loads the child.
     await plugin.onload();
@@ -87,6 +89,7 @@ describe('Plugin', () => {
     expect(params.app).toBe(plugin.app);
     expect(params.consoleDebugComponent).toBeInstanceOf(ConsoleDebugComponent);
     expect(params.pluginId).toBe(PLUGIN_ID);
+    expect(params.pluginNoticeComponent).toBeInstanceOf(PluginNoticeComponent);
 
     castTo<LoadedFlagHolder>(plugin).loaded__ = true;
     plugin.unload();
