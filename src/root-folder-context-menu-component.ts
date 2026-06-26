@@ -4,7 +4,6 @@ import type {
 } from '@obsidian-typings/obsidian-public-latest';
 import type { App } from 'obsidian';
 import type { ConsoleDebugComponent } from 'obsidian-dev-utils/obsidian/components/console-debug-component';
-import type { PluginNoticeComponent } from 'obsidian-dev-utils/obsidian/components/plugin-notice-component';
 
 import { InternalPluginName } from '@obsidian-typings/obsidian-public-latest/implementations';
 import {
@@ -17,35 +16,35 @@ import {
   retryWithTimeout
 } from 'obsidian-dev-utils/async';
 import { LayoutReadyComponent } from 'obsidian-dev-utils/obsidian/components/layout-ready-component';
+import { showErrorAndDisablePlugin } from 'obsidian-dev-utils/obsidian/plugin/plugin';
+
+import type { Plugin } from './plugin.ts';
 
 import { FileExplorerViewOpenFileContextMenuPatchComponent } from './patches/file-explorer-view-open-file-context-menu-patch-component.ts';
 
 interface RootFolderContextMenuComponentConstructorParams {
   readonly app: App;
   readonly consoleDebugComponent: ConsoleDebugComponent;
-  readonly pluginId: string;
-  readonly pluginNoticeComponent: PluginNoticeComponent;
+  readonly plugin: Plugin;
 }
 
 export class RootFolderContextMenuComponent extends LayoutReadyComponent {
   private readonly consoleDebugComponent: ConsoleDebugComponent;
   private fileExplorerPlugin?: FileExplorerPlugin;
   private fileExplorerView?: FileExplorerView;
-  private readonly pluginId: string;
-  private readonly pluginNoticeComponent: PluginNoticeComponent;
+  private readonly plugin: Plugin;
 
   public constructor(params: RootFolderContextMenuComponentConstructorParams) {
     super(params.app);
     this.consoleDebugComponent = params.consoleDebugComponent;
-    this.pluginId = params.pluginId;
-    this.pluginNoticeComponent = params.pluginNoticeComponent;
+    this.plugin = params.plugin;
   }
 
   protected override async onLayoutReady(): Promise<void> {
     const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(InternalPluginName.FileExplorer);
 
     if (!fileExplorerPluginInstance) {
-      await this.disablePlugin('File Explorer plugin is disabled. Disabling the plugin...');
+      await showErrorAndDisablePlugin(this.plugin, 'File Explorer plugin is disabled. Disabling the plugin...');
       return;
     }
 
@@ -92,12 +91,6 @@ export class RootFolderContextMenuComponent extends LayoutReadyComponent {
     this.registerEvent(this.app.workspace.on('file-menu', this.handleFileMenuEvent.bind(this)));
   }
 
-  private async disablePlugin(message: string): Promise<void> {
-    console.error(message);
-    this.pluginNoticeComponent.showNotice(message);
-    await this.app.plugins.disablePlugin(this.pluginId);
-  }
-
   private handleFileMenuEvent(menu: Menu, file: TAbstractFile): void {
     if (file.path !== '/') {
       return;
@@ -135,7 +128,7 @@ export class RootFolderContextMenuComponent extends LayoutReadyComponent {
       });
     } catch (e) {
       console.error(e);
-      await this.disablePlugin('Could not initialize FileExplorerView. Disabling the plugin...');
+      await showErrorAndDisablePlugin(this.plugin, 'Could not initialize FileExplorerView. Disabling the plugin...');
     }
   }
 
