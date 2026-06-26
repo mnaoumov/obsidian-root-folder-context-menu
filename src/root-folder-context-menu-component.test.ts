@@ -32,6 +32,7 @@ import type { Plugin } from './plugin.ts';
 import { RootFolderContextMenuComponent } from './root-folder-context-menu-component.ts';
 
 const PLUGIN_ID = 'root-folder-context-menu';
+const PLUGIN_NAME = 'Root Folder Context Menu';
 const STRICT_PROXY_TARGET_SYMBOL = Symbol.for('strictProxyTarget');
 
 interface AppGlobal {
@@ -336,7 +337,7 @@ function createMenuItem(textContent: string): MenuItemType {
 function createPluginMock(): Plugin {
   return strictProxy<Plugin>({
     app,
-    manifest: castTo<Plugin['manifest']>({ id: PLUGIN_ID })
+    manifest: castTo<Plugin['manifest']>({ id: PLUGIN_ID, name: PLUGIN_NAME })
   });
 }
 
@@ -356,7 +357,7 @@ function seedOnRawTarget(strictProxiedObject: object, key: string, value: unknow
 
 async function settleAsyncOperations(): Promise<void> {
   // The LayoutReadyComponent guard (window.setTimeout(0)) is a plain timer, so let it fire to schedule onLayoutReady via the real invokeAsyncSafely.
-  await sleep(0);
+  await sleep({ milliseconds: 0 });
   // Async-operation tracking then drains the tracked onLayoutReady promise (including its internal retryWithTimeout retries) deterministically.
   await waitForAllAsyncOperations();
 }
