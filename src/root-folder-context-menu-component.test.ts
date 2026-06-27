@@ -6,10 +6,7 @@ import type {
   MenuItem as MenuItemType
 } from 'obsidian';
 
-import {
-  sleep,
-  waitForAllAsyncOperations
-} from 'obsidian-dev-utils/async';
+import { waitForAllAsyncOperations } from 'obsidian-dev-utils/async';
 import { noop } from 'obsidian-dev-utils/function';
 import { castTo } from 'obsidian-dev-utils/object-utils';
 import { ConsoleDebugComponent } from 'obsidian-dev-utils/obsidian/components/console-debug-component';
@@ -357,7 +354,7 @@ function seedOnRawTarget(strictProxiedObject: object, key: string, value: unknow
 
 async function settleAsyncOperations(): Promise<void> {
   // The LayoutReadyComponent guard (window.setTimeout(0)) is a plain timer, so let it fire to schedule onLayoutReady via the real invokeAsyncSafely.
-  await sleep({ milliseconds: 0 });
+  await sleep(0);
   // Async-operation tracking then drains the tracked onLayoutReady promise (including its internal retryWithTimeout retries) deterministically.
   await waitForAllAsyncOperations();
 }
