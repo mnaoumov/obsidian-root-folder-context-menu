@@ -259,8 +259,8 @@ describe('RootFolderContextMenuComponent', () => {
       const component = createLoadedComponent();
 
       const openFileContextMenuMock = vi.fn();
-      const childNode = activeDocument.createElement('span');
-      const vaultSwitcherEl = activeDocument.createElement('div');
+      const childNode = activeWindow.createSpan();
+      const vaultSwitcherEl = activeWindow.createDiv();
       vaultSwitcherEl.appendChild(childNode);
       castTo<ComponentPrivate>(component).fileExplorerView = castTo<FileExplorerViewLike>({ openFileContextMenu: openFileContextMenuMock });
 
@@ -277,7 +277,7 @@ describe('RootFolderContextMenuComponent', () => {
 });
 
 function appendElement(className: string): HTMLElement {
-  const element = activeDocument.createElement('div');
+  const element = activeWindow.createDiv();
   element.className = className;
   activeDocument.body.appendChild(element);
   return element;

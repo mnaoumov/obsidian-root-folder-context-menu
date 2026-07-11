@@ -48,7 +48,7 @@ describe('FileExplorerViewOpenFileContextMenuPatchComponent', () => {
 
   it('should return early without calling the original method when the parent element is not an HTMLElement', () => {
     const { originalSpy, view } = loadPatch();
-    const fileItemElement = activeDocument.createElement('div');
+    const fileItemElement = activeWindow.createDiv();
 
     castTo<FileExplorerView>(view).openFileContextMenu(new Event('contextmenu'), fileItemElement);
 
@@ -104,8 +104,8 @@ class FakeFileExplorerView {
 }
 
 function createFileItemElements(): FileItemElements {
-  const parentElement = activeDocument.createElement('div');
-  const fileItemElement = activeDocument.createElement('div');
+  const parentElement = activeWindow.createDiv();
+  const fileItemElement = activeWindow.createDiv();
   parentElement.appendChild(fileItemElement);
   return { fileItemElement, parentElement };
 }
