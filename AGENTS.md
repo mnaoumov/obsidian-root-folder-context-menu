@@ -34,7 +34,3 @@ Root Folder Context Menu enables the right-click context menu for the vault root
   - `root-folder-context-menu-component.ts` — `LayoutReadyComponent` holding the core logic: resolves the File Explorer plugin/view (disabling itself if File Explorer is off), wires `contextmenu` handlers on the vault-switcher and nav-files container, filters disallowed items (move/delete/copy/rename/search) out of the root folder's `file-menu`, and reloads the File Explorer.
   - `patches/file-explorer-view-open-file-context-menu-patch-component.ts` — `MonkeyAroundComponent` that monkey-patches `FileExplorerView.openFileContextMenu` so the root `TFolder` is temporarily treated as non-root, making Obsidian build the context menu for it.
 - **`main` field** points to `src/main.ts` (Obsidian plugin source entry; built artifact is `dist/build/main.js`, not published to npm).
-
-## Known Issues
-
-None.
