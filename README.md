@@ -13,6 +13,14 @@ Full context menu as for any other folder is added:
 
 ![Context Menu](images/context-menu.png)
 
+## Demo vault
+
+A demo vault with usage examples ships with every release. You can access it via any of the following:
+
+1. Running the **Root Folder Context Menu: Open demo vault** command.
+2. Downloading `root-folder-context-menu.demo-vault.zip` from the [Releases](https://github.com/mnaoumov/obsidian-root-folder-context-menu/releases).
+3. Browsing its source in [`demo-vault/`](./demo-vault/README.md) in this repository.
+
 ## Installation
 
 The plugin is available in [the official Community Plugins repository](https://community.obsidian.md/plugins/root-folder-context-menu).
