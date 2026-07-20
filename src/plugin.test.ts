@@ -49,7 +49,11 @@ interface RootFolderContextMenuComponentConstructorParams {
   readonly plugin: Plugin;
 }
 
-const manifest = castTo<PluginManifest>({ id: PLUGIN_ID });
+const manifest = castTo<PluginManifest>({
+  id: PLUGIN_ID,
+  name: 'Root Folder Context Menu',
+  version: '1.0.0'
+});
 
 let app: AppType;
 let appMock: App;
@@ -87,6 +91,18 @@ describe('Plugin', () => {
     expect(params.app).toBe(plugin.app);
     expect(params.consoleDebugComponent).toBeInstanceOf(ConsoleDebugComponent);
     expect(params.plugin).toBe(plugin);
+
+    castTo<LoadedFlagHolder>(plugin).loaded__ = true;
+    plugin.unload();
+  });
+
+  it('should register the open demo vault command', async () => {
+    const plugin = new Plugin(app, manifest);
+    const addCommandSpy = vi.spyOn(plugin, 'addCommand');
+    // PluginBase.onload is async; driving it directly runs onloadImpl and registers the command handlers.
+    await plugin.onload();
+
+    expect(addCommandSpy).toHaveBeenCalledWith(expect.objectContaining({ id: 'open-demo-vault' }));
 
     castTo<LoadedFlagHolder>(plugin).loaded__ = true;
     plugin.unload();
