@@ -1,9 +1,8 @@
-# Root Folder Context Menu demo vault
+This is an [Obsidian](https://obsidian.md/) vault demonstrating features of the [Root Folder Context Menu](https://github.com/mnaoumov/obsidian-root-folder-context-menu) plugin.
 
-A small Obsidian vault that demonstrates the [Root Folder Context Menu](https://github.com/mnaoumov/obsidian-root-folder-context-menu) plugin - it adds a right-click context menu to the **vault root folder** and to the **empty area** of the `Files` pane, which Obsidian normally leaves without one, so you can create a note, folder, or canvas at the top level right from there.
+## Opening this vault
 
-Open [00 Start](<./00 Start.md>) and work through the notes. Right-click the vault-name row at the top of the File Explorer, or the blank space below the file list, and pick an action.
+- **If you already have the plugin installed**, run the **Root Folder Context Menu: Open demo vault** command — it downloads and opens the latest demo vault automatically.
+- **Otherwise**, download `root-folder-context-menu.demo-vault.zip` from the [plugin releases](https://github.com/mnaoumov/obsidian-root-folder-context-menu/releases), unzip it, and in Obsidian choose `Manage vaults...` → `Open folder as vault` → select the unzipped folder.
 
-## First open
-
-The first time you open this vault, Obsidian treats it as **untrusted**, so the bundled plugins are listed but not loaded until you **Trust author and enable plugins** and reload. After that, the Demo Vault Helper opens the start note for you.
+On first open, Obsidian treats the vault as untrusted — choose **Trust author and enable plugins** (or enable Community plugins manually), then open [00 Start](<./00 Start.md>).
