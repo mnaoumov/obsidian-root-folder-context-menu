@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.4.43
+
+- chore: update libs
+
 ## 1.4.42
 
 - chore: update libs
