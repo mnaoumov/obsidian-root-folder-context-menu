@@ -18,7 +18,7 @@ Full context menu as for any other folder is added:
 A demo vault with usage examples ships with every release. You can access it via any of the following:
 
 1. Running the **Root Folder Context Menu: Open demo vault** command.
-2. Downloading `root-folder-context-menu.demo-vault.zip` from the [Releases](https://github.com/mnaoumov/obsidian-root-folder-context-menu/releases).
+2. Downloading `root-folder-context-menu-demo-vault-<version>.zip` (`<version>` is the release version) from the [Releases](https://github.com/mnaoumov/obsidian-root-folder-context-menu/releases).
 3. Browsing its source in [`demo-vault/`](./demo-vault/README.md) in this repository.
 
 ## Installation
