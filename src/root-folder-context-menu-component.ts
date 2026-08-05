@@ -67,7 +67,7 @@ export class RootFolderContextMenuComponent extends LayoutReadyComponent {
         vaultSwitcherEl,
         'contextmenu',
         /* v8 ignore start -- DOM event callback invoked by browser at runtime. */
-        convertAsyncToSync(async (ev: MouseEvent): Promise<void> => this.openContextMenu(ev, vaultSwitcherEl))
+        convertAsyncToSync(async ($event: MouseEvent): Promise<void> => this.openContextMenu($event, vaultSwitcherEl))
         /* v8 ignore stop */
       );
 
@@ -77,11 +77,11 @@ export class RootFolderContextMenuComponent extends LayoutReadyComponent {
           navFilesContainerEl,
           'contextmenu',
           /* v8 ignore start -- DOM event callback invoked by browser at runtime. */
-          convertAsyncToSync(async (ev: MouseEvent): Promise<void> => {
-            if (ev.target !== navFilesContainerEl) {
+          convertAsyncToSync(async ($event: MouseEvent): Promise<void> => {
+            if ($event.target !== navFilesContainerEl) {
               return;
             }
-            await this.openContextMenu(ev, vaultSwitcherEl);
+            await this.openContextMenu($event, vaultSwitcherEl);
           })
           /* v8 ignore stop */
         );
@@ -104,14 +104,14 @@ export class RootFolderContextMenuComponent extends LayoutReadyComponent {
       'plugins.search.menu-opt-search-in-folder'
     ];
 
-    const localizedTitles = localizationKeys.map((key) => activeWindow.i18next.t(key));
-    menu.items = menu.items.filter((item) => !(item instanceof MenuItem) || !localizedTitles.includes(item.titleEl.textContent));
+    const localizedTitles = new Set(localizationKeys.map((key) => activeWindow.i18next.t(key)));
+    menu.items = menu.items.filter((item) => !(item instanceof MenuItem) || !localizedTitles.has(item.titleEl.textContent));
   }
 
   private async initFileExplorerView(): Promise<void> {
     try {
       await retryWithTimeout({
-        operationFn: async (): Promise<boolean> => {
+        operationFunction: async (): Promise<boolean> => {
           const fileExplorerLeaf = this.app.workspace.getLeavesOfType(InternalPluginName.FileExplorer)[0];
 
           if (fileExplorerLeaf) {
@@ -126,17 +126,17 @@ export class RootFolderContextMenuComponent extends LayoutReadyComponent {
         },
         operationName: 'Initialize FileExplorerView'
       });
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
       await showErrorAndDisablePlugin(this.plugin, 'Could not initialize FileExplorerView. Disabling the plugin...');
     }
   }
 
-  private async openContextMenu(ev: Event, vaultSwitcherEl: HTMLElement): Promise<void> {
+  private async openContextMenu($event: Event, vaultSwitcherEl: HTMLElement): Promise<void> {
     const RETRY_DELAY_IN_MILLISECONDS = 100;
     await sleep(RETRY_DELAY_IN_MILLISECONDS);
     activeDocument.body.click();
-    this.fileExplorerView?.openFileContextMenu(ev, vaultSwitcherEl.childNodes[0] as HTMLElement);
+    this.fileExplorerView?.openFileContextMenu($event, vaultSwitcherEl.firstChild as HTMLElement);
   }
 
   private async reloadFileExplorer(): Promise<void> {
