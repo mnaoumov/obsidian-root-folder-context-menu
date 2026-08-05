@@ -11,11 +11,11 @@ export class FileExplorerViewOpenFileContextMenuPatchComponent extends MonkeyAro
 
   public override onload(): void {
     this.registerMethodPatch({
+      $object: getPrototypeOf(this.fileExplorerView),
       methodName: 'openFileContextMenu',
-      obj: getPrototypeOf(this.fileExplorerView),
       patchHandler: ({
         fallback,
-        originalArgs: [, fileItemEl],
+        originalArguments: [, fileItemEl],
         originalThis
       }) => {
         if (!(fileItemEl.parentElement instanceof HTMLElement)) {

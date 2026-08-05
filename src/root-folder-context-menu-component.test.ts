@@ -39,7 +39,7 @@ interface AppGlobal {
 interface ComponentPrivate {
   fileExplorerView?: FileExplorerViewLike;
   handleFileMenuEvent(menu: Menu, file: FileLike): void;
-  openContextMenu(ev: Event, vaultSwitcherEl: HTMLElement): Promise<void>;
+  openContextMenu($event: Event, vaultSwitcherEl: HTMLElement): Promise<void>;
 }
 
 interface FileExplorerLeafLike {
@@ -105,9 +105,7 @@ describe('RootFolderContextMenuComponent', () => {
 
   afterEach(() => {
     castTo<AppGlobal>(window).app = savedGlobalApp;
-    while (activeDocument.body.firstChild) {
-      activeDocument.body.firstChild.remove();
-    }
+    activeDocument.body.replaceChildren();
   });
 
   describe('onLayoutReady', () => {
@@ -261,7 +259,7 @@ describe('RootFolderContextMenuComponent', () => {
       const openFileContextMenuMock = vi.fn();
       const childNode = activeWindow.createSpan();
       const vaultSwitcherEl = activeWindow.createDiv();
-      vaultSwitcherEl.appendChild(childNode);
+      vaultSwitcherEl.append(childNode);
       castTo<ComponentPrivate>(component).fileExplorerView = castTo<FileExplorerViewLike>({ openFileContextMenu: openFileContextMenuMock });
 
       const event = new Event('contextmenu');
@@ -279,7 +277,7 @@ describe('RootFolderContextMenuComponent', () => {
 function appendElement(className: string): HTMLElement {
   const element = activeWindow.createDiv();
   element.className = className;
-  activeDocument.body.appendChild(element);
+  activeDocument.body.append(element);
   return element;
 }
 

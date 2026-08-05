@@ -106,7 +106,7 @@ class FakeFileExplorerView {
 function createFileItemElements(): FileItemElements {
   const parentElement = activeWindow.createDiv();
   const fileItemElement = activeWindow.createDiv();
-  parentElement.appendChild(fileItemElement);
+  parentElement.append(fileItemElement);
   return { fileItemElement, parentElement };
 }
 
