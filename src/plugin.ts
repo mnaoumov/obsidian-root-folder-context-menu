@@ -4,7 +4,7 @@ import { PluginBase } from 'obsidian-dev-utils/obsidian/plugin/plugin';
 import { RootFolderContextMenuComponent } from './root-folder-context-menu-component.ts';
 
 export class Plugin extends PluginBase {
-  protected override onloadImpl(): void {
+  protected override async onloadImpl(): Promise<void> {
     this.addChild(
       new RootFolderContextMenuComponent({
         app: this.app,
@@ -12,7 +12,7 @@ export class Plugin extends PluginBase {
         plugin: this
       })
     );
-    this.commandHandlerComponent.registerCommandHandlers(() => [
+    await this.commandHandlerComponent.registerCommandHandlers(() => [
       new OpenDemoVaultCommandHandler({
         app: this.app,
         pluginId: this.manifest.id,
