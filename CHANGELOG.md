@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 1.4.45
+
+- chore: update libs
+- chore: update libs
+- chore(vitest): adopt the shared Obsidian plugin vitest configuration
+- chore: update libs and clear the npm audit
+- docs: fix the demo vault download instructions
+
 ## 1.4.44
 
 - chore: update libs
