@@ -5,31 +5,50 @@
 [![GitHub downloads](https://img.shields.io/github/downloads/mnaoumov/obsidian-root-folder-context-menu/total)](https://github.com/mnaoumov/obsidian-root-folder-context-menu/releases)
 [![Coverage: 100%](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/mnaoumov/obsidian-root-folder-context-menu)
 
-This is a plugin for [Obsidian](https://obsidian.md/) that enables context menu for vault root folder and the empty area of the `Files` pane.
+Every folder in [Obsidian](https://obsidian.md/)'s File Explorer has a right-click menu — every folder
+except the one you use most. The **vault root** has none, and neither does the **empty area** below the
+file list, so creating a note at the top level means creating it somewhere else and moving it, or
+reaching for the ribbon.
 
-![Context Menu Area](images/context-menu-area.png)
-
-Full context menu as for any other folder is added:
-
-![Context Menu](images/context-menu.png)
+This plugin gives both spots the same context menu any other folder gets, minus the entries that
+cannot apply to the vault itself.
 
 ## Demo vault
 
-A demo vault with usage examples ships with every release. You can access it via any of the following:
+**The documentation is a demo vault.** Each feature has a note that explains what it does and why you
+would want it, with a sample folder to create things next to.
+
+**[Start reading here](<./demo-vault/00 Start.md>)** — it is plain markdown, so it works on GitHub with
+nothing installed.
+
+A copy of the vault ships with every release. You can access it via any of the following:
 
 1. Running the **Root Folder Context Menu: Open demo vault** command.
 2. Downloading `root-folder-context-menu-demo-vault-<version>.zip` (`<version>` is the release version) from the [Releases](https://github.com/mnaoumov/obsidian-root-folder-context-menu/releases).
 3. Browsing its source in [`demo-vault/`](./demo-vault/README.md) in this repository.
 
+## What it does
+
+- **The vault-root row** — the row at the very bottom of the left sidebar showing your vault's name —
+  gets the full folder menu: **New note**, **New folder**, **New canvas**, **Set as attachment
+  folder**, and the rest.
+  [01 Root folder context menu](<./demo-vault/01 Root folder context menu.md>)
+- **The empty area** below the last file in the `Files` pane opens that same menu, so you do not have
+  to aim at the vault-name row.
+  [02 Empty area context menu](<./demo-vault/02 Empty area context menu.md>)
+
+Entries that make no sense for the vault itself — **Rename**, **Delete**, **Move folder to...**, **Make
+a copy**, **Search in folder** — are removed. There is nothing to configure.
+
 ## Installation
 
-The plugin is available in [the official Community Plugins repository](https://community.obsidian.md/plugins/root-folder-context-menu).
+The plugin is available in [the official Community Plugins repository](https://obsidian.md/plugins?id=root-folder-context-menu).
 
 ### Beta versions
 
-To install the latest beta release of this plugin (regardless if it is available in [the official Community Plugins repository](https://community.obsidian.md) or not), follow these steps:
+To install the latest beta release of this plugin (regardless if it is available in [the official Community Plugins repository](https://obsidian.md/plugins) or not), follow these steps:
 
-1. Ensure you have the [BRAT plugin](https://community.obsidian.md/plugins/obsidian42-brat) installed and enabled.
+1. Ensure you have the [BRAT plugin](https://obsidian.md/plugins?id=obsidian42-brat) installed and enabled.
 2. Click [Install via BRAT](https://intradeus.github.io/http-protocol-redirector?r=obsidian://brat?plugin=https://github.com/mnaoumov/obsidian-root-folder-context-menu).
 3. An Obsidian pop-up window should appear. In the window, click the `Add plugin` button once and wait a few seconds for the plugin to install.
 
@@ -44,6 +63,14 @@ window.DEBUG.enable('root-folder-context-menu');
 ```
 
 For more details, refer to the [documentation](https://mnaoumov.dev/obsidian-dev-utils/guides/debugging/).
+
+## Changelog
+
+All notable changes to this project will be documented in the [CHANGELOG](./CHANGELOG.md).
+
+## Contributing
+
+Contributions are welcome — see [CONTRIBUTING](./CONTRIBUTING.md) to get set up.
 
 ## Support
 
