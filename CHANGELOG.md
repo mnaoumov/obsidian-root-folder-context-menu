@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.4.47
+
+- docs: make the demo vault the documentation, in the standard layout
+- docs(demo-vault): bring the vault on-convention and register the coverage suite
+
 ## 1.4.46
 
 - chore: update libs and adopt obsidian-integration-testing 10
