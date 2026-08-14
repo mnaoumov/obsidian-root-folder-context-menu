@@ -1,3 +1,5 @@
+# Root Folder Context Menu demo vault
+
 This is an [Obsidian](https://obsidian.md/) vault demonstrating features of the [Root Folder Context Menu](https://github.com/mnaoumov/obsidian-root-folder-context-menu) plugin.
 
 ## Opening this vault
