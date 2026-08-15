@@ -13,6 +13,19 @@ reaching for the ribbon.
 This plugin gives both spots the same context menu any other folder gets, minus the entries that
 cannot apply to the vault itself.
 
+<!-- markdownlint-disable MD033 -->
+
+<a href="images/screenshots/screenshot-desktop-1.png"><img src="images/screenshots/screenshot-desktop-1.png" alt="The vault root gets the same menu any folder has" width="600"></a>
+
+<details>
+<summary>More screenshots</summary>
+
+<a href="images/screenshots/screenshot-desktop-2.png"><img src="images/screenshots/screenshot-desktop-2.png" alt="Without it: only the few entries Obsidian offers" width="600"></a>
+
+</details>
+
+<!-- markdownlint-enable MD033 -->
+
 ## Demo vault
 
 **The documentation is a demo vault.** Each feature has a note that explains what it does and why you
