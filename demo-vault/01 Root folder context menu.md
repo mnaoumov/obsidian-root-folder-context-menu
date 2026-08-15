@@ -21,6 +21,32 @@ In a stock Obsidian vault, right-clicking the **vault root** in the File Explore
 
 Try **New note** or **New folder** - the new item lands at the top level, next to [Sample Folder](<./Sample Folder/Note in folder.md>) and the notes already here.
 
+## See the difference
+
+The clearest way to judge the plugin is to right-click the vault-name row twice - once without it, once with it. Turn it off:
+
+```code-button
+---
+caption: Turn the plugin off
+---
+await require('/demoSetup.ts').disablePlugin(app);
+```
+
+Manual equivalent: toggle **Root Folder Context Menu** off in **Settings -> Community plugins**.
+
+Right-click the vault-name row now and count the entries - Obsidian offers a couple of its own. Then turn it back on and right-click again:
+
+```code-button
+---
+caption: Turn the plugin back on
+---
+await require('/demoSetup.ts').enablePlugin(app);
+```
+
+Manual equivalent: toggle **Root Folder Context Menu** back on in the same place.
+
+The second menu is the one every other folder already had.
+
 ## What is left out on purpose
 
 Some folder actions make no sense for the vault root, so the plugin hides them: **Rename**, **Delete**, **Move folder to...**, **Make a copy**, and **Search in folder** are all omitted - you cannot rename or delete the vault itself. Everything that *does* apply to a top-level location stays.
