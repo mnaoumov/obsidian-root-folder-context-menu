@@ -1,8 +1,19 @@
 # Empty area context menu
 
-The vault root is not the only spot this plugin unlocks. The **empty area** of the `Files` pane - the blank space *below* the last file in the File Explorer - normally has no context menu either. This plugin gives it the same root-folder menu, so you do not have to aim precisely at the vault-name row.
+The vault root is not the only spot this plugin improves. The **empty area** of the `Files` pane - the blank space *below* the last file in the File Explorer - gets the same full root-folder menu, so you do not have to aim precisely at the vault-name row.
 
 ## Try it
+
+This vault is small enough that the file list may not reach the bottom of the pane, leaving nothing to right-click. The button fills it out:
+
+```code-button
+---
+caption: Create filler notes so the file list has some height
+---
+await require('/demoSetup.ts').fillFileList(app);
+```
+
+Manual equivalent: create any handful of notes until the file list fills the pane.
 
 1. Open the **File Explorer**.
 2. Scroll to the bottom of the file list so there is some empty space beneath the last item.
@@ -11,5 +22,13 @@ The vault root is not the only spot this plugin unlocks. The **empty area** of t
 
 This is handy in a large vault: instead of scrolling back up to the vault-name row, right-click wherever there is blank space in the pane.
 
-> [!NOTE]
-> If the file list fills the entire pane and leaves no blank space, add a few notes or collapse some folders to reveal the empty area, or just use the vault-root row described in [01 Root folder context menu](<./01 Root folder context menu.md>).
+When you are done, put the vault back:
+
+```code-button
+---
+caption: Delete the filler notes
+---
+await require('/demoSetup.ts').removeFillerNotes(app);
+```
+
+Manual equivalent: delete the `Materials/02 Empty area context menu` folder.
