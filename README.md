@@ -5,10 +5,10 @@
 [![GitHub downloads](https://img.shields.io/github/downloads/mnaoumov/obsidian-root-folder-context-menu/total)](https://github.com/mnaoumov/obsidian-root-folder-context-menu/releases)
 [![Coverage: 100%](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/mnaoumov/obsidian-root-folder-context-menu)
 
-Every folder in [Obsidian](https://obsidian.md/)'s File Explorer has a right-click menu — every folder
-except the one you use most. The **vault root** has none, and neither does the **empty area** below the
-file list, so creating a note at the top level means creating it somewhere else and moving it, or
-reaching for the ribbon.
+Every folder in [Obsidian](https://obsidian.md/)'s File Explorer has a full right-click menu — every
+folder except the one you use most. The **vault root** and the **empty area** below the file list get
+only a short menu of their own, missing most of what a folder row offers, so acting on the top level
+means picking some other folder and moving things afterwards, or reaching for the ribbon.
 
 This plugin gives both spots the same context menu any other folder gets, minus the entries that
 cannot apply to the vault itself.
@@ -42,9 +42,9 @@ A copy of the vault ships with every release. You can access it via any of the f
 
 ## What it does
 
-- **The vault-root row** — the row at the very bottom of the left sidebar showing your vault's name —
-  gets the full folder menu: **New note**, **New folder**, **New canvas**, **Set as attachment
-  folder**, and the rest.
+- **The vault-name row** — at the very bottom of the left sidebar on desktop, at the top of the left
+  drawer on mobile — gets the full folder menu: **New note**, **New folder**, **New canvas**, **Set as
+  attachment folder**, and the rest.
   [01 Root folder context menu](<./demo-vault/01 Root folder context menu.md>)
 - **The empty area** below the last file in the `Files` pane opens that same menu, so you do not have
   to aim at the vault-name row.
