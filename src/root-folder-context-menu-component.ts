@@ -22,6 +22,14 @@ import type { Plugin } from './plugin.ts';
 
 import { FileExplorerViewOpenFileContextMenuPatchComponent } from './patches/file-explorer-view-open-file-context-menu-patch-component.ts';
 
+// The element the root context menu is anchored to, in priority order.
+// Obsidian builds `.workspace-drawer-vault-switcher` only inside `if (isDesktopApp)`.
+// On mobile the vault name lives in the left drawer header instead, so the desktop selector never matches.
+const ROOT_ANCHOR_SELECTORS = [
+  '.workspace-drawer-vault-switcher',
+  '.workspace-drawer-header-name'
+];
+
 interface RootFolderContextMenuComponentConstructorParams {
   readonly app: App;
   readonly consoleDebugComponent: ConsoleDebugComponent;
@@ -60,17 +68,18 @@ export class RootFolderContextMenuComponent extends LayoutReadyComponent {
     this.register(this.reloadFileExplorer.bind(this));
     await this.reloadFileExplorer();
 
-    const vaultSwitcherEl = activeDocument.querySelector<HTMLElement>('.workspace-drawer-vault-switcher');
-    if (vaultSwitcherEl) {
-      this.fileExplorerView.files.set(vaultSwitcherEl, this.app.vault.getRoot());
+    const rootAnchorEl = findRootAnchorEl();
+    if (rootAnchorEl) {
+      this.fileExplorerView.files.set(rootAnchorEl, this.app.vault.getRoot());
       this.registerDomEvent(
-        vaultSwitcherEl,
+        rootAnchorEl,
         'contextmenu',
         /* v8 ignore start -- DOM event callback invoked by browser at runtime. */
-        convertAsyncToSync(async ($event: MouseEvent): Promise<void> => this.openContextMenu($event, vaultSwitcherEl))
+        convertAsyncToSync(async ($event: MouseEvent): Promise<void> => this.openContextMenu($event, rootAnchorEl))
         /* v8 ignore stop */
       );
 
+      // The empty area below the file list opens the same menu, anchored to the same element.
       const navFilesContainerEl = activeDocument.querySelector<HTMLElement>('.nav-files-container');
       if (navFilesContainerEl) {
         this.registerDomEvent(
@@ -81,11 +90,13 @@ export class RootFolderContextMenuComponent extends LayoutReadyComponent {
             if ($event.target !== navFilesContainerEl) {
               return;
             }
-            await this.openContextMenu($event, vaultSwitcherEl);
+            await this.openContextMenu($event, rootAnchorEl);
           })
           /* v8 ignore stop */
         );
       }
+    } else {
+      this.consoleDebugComponent.consoleDebug(`No root anchor element matched any of ${ROOT_ANCHOR_SELECTORS.join(', ')}`);
     }
 
     this.registerEvent(this.app.workspace.on('file-menu', this.handleFileMenuEvent.bind(this)));
@@ -132,11 +143,12 @@ export class RootFolderContextMenuComponent extends LayoutReadyComponent {
     }
   }
 
-  private async openContextMenu($event: Event, vaultSwitcherEl: HTMLElement): Promise<void> {
+  private async openContextMenu($event: Event, rootAnchorEl: HTMLElement): Promise<void> {
     const RETRY_DELAY_IN_MILLISECONDS = 100;
     await sleep(RETRY_DELAY_IN_MILLISECONDS);
     activeDocument.body.click();
-    this.fileExplorerView?.openFileContextMenu($event, vaultSwitcherEl.firstChild as HTMLElement);
+    // Obsidian resolves the file as `files.get(el.parentElement)`, so it must be handed a child of the anchor.
+    this.fileExplorerView?.openFileContextMenu($event, rootAnchorEl.firstElementChild as HTMLElement);
   }
 
   private async reloadFileExplorer(): Promise<void> {
@@ -147,4 +159,15 @@ export class RootFolderContextMenuComponent extends LayoutReadyComponent {
     await this.fileExplorerPlugin?.enable();
     await this.initFileExplorerView();
   }
+}
+
+function findRootAnchorEl(): HTMLElement | null {
+  for (const selector of ROOT_ANCHOR_SELECTORS) {
+    const element = activeDocument.querySelector<HTMLElement>(selector);
+    if (element) {
+      return element;
+    }
+  }
+
+  return null;
 }

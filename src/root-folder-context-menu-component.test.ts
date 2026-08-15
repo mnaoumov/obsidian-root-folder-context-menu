@@ -39,7 +39,7 @@ interface AppGlobal {
 interface ComponentPrivate {
   fileExplorerView?: FileExplorerViewLike;
   handleFileMenuEvent(menu: Menu, file: FileLike): void;
-  openContextMenu($event: Event, vaultSwitcherEl: HTMLElement): Promise<void>;
+  openContextMenu($event: Event, rootAnchorEl: HTMLElement): Promise<void>;
 }
 
 interface FileExplorerLeafLike {
@@ -204,6 +204,57 @@ describe('RootFolderContextMenuComponent', () => {
       await fireLayoutReady();
 
       expect(view.files.get(vaultSwitcherEl)).toBe(app.vault.getRoot());
+
+      await unloadComponent(component);
+    });
+
+    it('should anchor to the mobile drawer header name when the desktop vault switcher is absent', async () => {
+      const view = createFileExplorerView();
+      const leaf = createLeaf(view);
+      getEnabledPluginByIdMock.mockReturnValue({ plugin: createFileExplorerPlugin() });
+      getLeavesOfTypeMock.mockReturnValue([leaf]);
+
+      // Obsidian builds the vault switcher only on desktop; on mobile only this header element exists.
+      const drawerHeaderNameEl = appendElement('workspace-drawer-header-name');
+
+      const component = createLoadedComponent();
+      await fireLayoutReady();
+
+      expect(view.files.get(drawerHeaderNameEl)).toBe(app.vault.getRoot());
+
+      await unloadComponent(component);
+    });
+
+    it('should prefer the desktop vault switcher when both anchors are present', async () => {
+      const view = createFileExplorerView();
+      const leaf = createLeaf(view);
+      getEnabledPluginByIdMock.mockReturnValue({ plugin: createFileExplorerPlugin() });
+      getLeavesOfTypeMock.mockReturnValue([leaf]);
+
+      const drawerHeaderNameEl = appendElement('workspace-drawer-header-name');
+      const vaultSwitcherEl = appendElement('workspace-drawer-vault-switcher');
+
+      const component = createLoadedComponent();
+      await fireLayoutReady();
+
+      expect(view.files.get(vaultSwitcherEl)).toBe(app.vault.getRoot());
+      expect(view.files.has(drawerHeaderNameEl)).toBe(false);
+
+      await unloadComponent(component);
+    });
+
+    it('should wire no context menu when no anchor element is present', async () => {
+      const view = createFileExplorerView();
+      const leaf = createLeaf(view);
+      getEnabledPluginByIdMock.mockReturnValue({ plugin: createFileExplorerPlugin() });
+      getLeavesOfTypeMock.mockReturnValue([leaf]);
+
+      appendElement('nav-files-container');
+
+      const component = createLoadedComponent();
+      await fireLayoutReady();
+
+      expect(view.files.size).toBe(0);
 
       await unloadComponent(component);
     });
