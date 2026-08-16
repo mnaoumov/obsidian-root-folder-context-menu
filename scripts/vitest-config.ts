@@ -7,9 +7,10 @@ import { defineObsidianPluginVitestConfig } from 'obsidian-dev-utils/script-util
  * The screenshot-capture suites (T461-P21) that write
  * `images/screenshots/screenshot-*.png`.
  *
- * There is no android suite here: the plugin's mobile hooks do not attach on
- * current Obsidian Mobile (see the desktop suite's header), so there is nothing
- * to photograph. Named `*.desktop-capture.` rather than
+ * There is no android capture suite here YET. The mobile hooks do attach as of
+ * T506-P32 — the vault name at the top of the left drawer is the anchor — so a
+ * mobile set is owed and is tracked in T461-P21. Named `*.desktop-capture.`
+ * rather than
  * `*.desktop.` / `*.android.` so they match NONE of the standard project globs.
  * That keeps them out of `npm run test:integration` entirely — capturing is an
  * explicit operation (`npm run capture:screenshots`), not something every test
