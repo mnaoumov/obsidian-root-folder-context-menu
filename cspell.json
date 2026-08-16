@@ -18,6 +18,8 @@
     "preversion",
     "tsbuildinfo",
     "unstub",
+    "unvalidated",
+    "wdio",
     "wikilink",
     "wikilinks"
   ],
