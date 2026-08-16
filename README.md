@@ -21,6 +21,8 @@ cannot apply to the vault itself.
 <summary>More screenshots</summary>
 
 <a href="images/screenshots/screenshot-desktop-2.png"><img src="images/screenshots/screenshot-desktop-2.png" alt="Without it: only the few entries Obsidian offers" width="600"></a>
+<a href="images/screenshots/screenshot-mobile-1.png"><img src="images/screenshots/screenshot-mobile-1.png" alt="Long-press below your files: the root gets a folder's menu" width="270"></a>
+<a href="images/screenshots/screenshot-mobile-2.png"><img src="images/screenshots/screenshot-mobile-2.png" alt="Without it: only the few entries Obsidian offers" width="270"></a>
 
 </details>
 
