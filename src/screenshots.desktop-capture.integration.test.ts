@@ -13,12 +13,13 @@
  * empty area below the file list — and a four-entry menu means nothing until the
  * seven-entry one has been seen.
  *
- * DESKTOP ONLY. The plugin also hooks the vault name at the top of the mobile
- * drawer, but it looks for `.workspace-drawer-vault-switcher` and current
- * Obsidian Mobile renders that element as `workspace-drawer-header-switcher`, so
- * the hook attaches to nothing. Pressing the file list on a phone yields
- * Obsidian's own menu carrying none of the entries this plugin adds. Raised
- * separately — there is no mobile behavior left to photograph.
+ * DESKTOP ONLY, and only for now. The plugin's mobile half was broken when
+ * these shots were taken — it anchored to `.workspace-drawer-vault-switcher`,
+ * which Obsidian builds only inside `if (isDesktopApp)`, so on a phone the
+ * anchor was `null` and both listeners died with it. Fixed under T506-P32 and
+ * proven on a device by `plugin.android.integration.test.ts`: a long press on
+ * the vault name raises `Bookmark...` and `Copy path` where the phone offers no
+ * menu at all. A mobile set is therefore owed, and is tracked in T461-P21.
  *
  * Both shots assert what they claim — that the menu is there, and that it is
  * not — so a frame can never quietly show the opposite of its caption.
