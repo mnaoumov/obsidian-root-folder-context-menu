@@ -46,6 +46,14 @@ const LAYOUT_READY_TIMEOUT_IN_MILLISECONDS = 240_000;
  */
 const DEMO_VAULT_TEST_FILES = 'src/**/*.demo-vault.integration.test.ts';
 
+/**
+ * One `it` per note runs every button in that note, and each button re-opens the note, walks the
+ * preview to find itself and then waits up to 15s for a result. A note with a dozen buttons therefore
+ * blows well past the desktop project's 30s default — which fails the whole note with a bare vitest
+ * timeout instead of naming the button that actually misbehaved.
+ */
+const DEMO_VAULT_TIMEOUT_IN_MILLISECONDS = 600_000;
+
 export const config = defineObsidianPluginVitestConfig({
   customProjects(context: ObsidianPluginVitestConfigContext): TestProjectConfiguration[] {
     return [
@@ -76,7 +84,8 @@ export const config = defineObsidianPluginVitestConfig({
           ...context.desktop,
           globalSetup: ['./scripts/demo-vault-global-setup.ts'],
           include: [DEMO_VAULT_TEST_FILES],
-          name: 'integration-tests:demo-vault'
+          name: 'integration-tests:demo-vault',
+          testTimeout: DEMO_VAULT_TIMEOUT_IN_MILLISECONDS
         }
       }
     ];
