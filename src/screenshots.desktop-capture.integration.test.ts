@@ -140,11 +140,13 @@ describe('desktop store screenshots', () => {
  */
 async function dismissMenu(): Promise<void> {
   await evalInObsidian({
-    async callback({ lib: { waitUntil } }) {
+    async callback({ lib: { pressKey, waitUntil } }) {
       const MENU_TIMEOUT_IN_MILLISECONDS = 15_000;
       const SETTLE_DELAY_IN_MILLISECONDS = 600;
 
-      document.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Escape' }));
+      // A trusted Escape: Obsidian acts on real key input, so a dispatched one can be
+      // Ignored outright while this still looked like it had dismissed the menu.
+      pressKey({ key: 'Escape' });
       document.body.click();
 
       await waitUntil({
@@ -167,7 +169,7 @@ async function dismissMenu(): Promise<void> {
  */
 async function rightClickBelowTheFiles(): Promise<MenuProbe> {
   return await evalInObsidian({
-    async callback({ lib: { waitUntil } }) {
+    async callback({ lib: { clickMouse, waitUntil } }) {
       const MENU_SETTLE_TIMEOUT_IN_MILLISECONDS = 3000;
       const SETTLE_DELAY_IN_MILLISECONDS = 900;
       const BELOW_LAST_FILE_OFFSET_IN_PIXELS = 40;
@@ -187,14 +189,14 @@ async function rightClickBelowTheFiles(): Promise<MenuProbe> {
       // Would photograph Obsidian's ordinary file menu.
       const clientY = (lastFileRect?.bottom ?? containerRect.top) + BELOW_LAST_FILE_OFFSET_IN_PIXELS;
 
-      container.dispatchEvent(
-        new MouseEvent('contextmenu', {
-          bubbles: true,
-          cancelable: true,
-          clientX: Math.round(containerRect.left + containerRect.width / 2),
-          clientY: Math.round(clientY)
-        })
-      );
+      // A TRUSTED right-click — the gesture a user actually performs, and the only kind guaranteed to
+      // Reach a listener that checks `event.isTrusted`. This particular path does not check it, so the
+      // Dispatch this replaces did work; the markdown viewport's menu does, and would not have.
+      clickMouse({
+        button: 'right',
+        x: containerRect.left + containerRect.width / 2,
+        y: clientY
+      });
 
       // A short wait either way: this is used BOTH to show a menu appearing and
       // To show one not appearing, so a timeout here is a legitimate outcome

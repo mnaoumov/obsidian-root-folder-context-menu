@@ -28,6 +28,11 @@ interface MenuProbe {
   readonly items: string[];
 }
 
+interface Point {
+  readonly x: number;
+  readonly y: number;
+}
+
 const PLUGIN_ID = 'root-folder-context-menu';
 
 /**
@@ -178,11 +183,13 @@ describe('root context menu on desktop', () => {
  */
 async function dismissMenu(): Promise<void> {
   await evalInObsidian({
-    async callback({ lib: { waitUntil } }) {
+    async callback({ lib: { pressKey, waitUntil } }) {
       const MENU_TIMEOUT_IN_MILLISECONDS = 15_000;
       const SETTLE_DELAY_IN_MILLISECONDS = 600;
 
-      document.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Escape' }));
+      // A trusted Escape: Obsidian acts on real key input, so a dispatched one can be
+      // Ignored outright while this still looked like it had dismissed the menu.
+      pressKey({ key: 'Escape' });
       document.body.click();
 
       await waitUntil({
@@ -224,7 +231,7 @@ async function openContextMenuOn(selector: string): Promise<MenuProbe> {
   await dismissMenu();
 
   return await evalInObsidian({
-    async callback({ lib: { waitUntil }, selector: targetSelector }) {
+    async callback({ lib: { clickMouse, waitUntil }, selector: targetSelector }) {
       const MENU_TIMEOUT_IN_MILLISECONDS = 5000;
       const SETTLE_DELAY_IN_MILLISECONDS = 900;
 
@@ -233,15 +240,22 @@ async function openContextMenuOn(selector: string): Promise<MenuProbe> {
         throw new TypeError(`No element matched ${targetSelector}.`);
       }
 
-      const rect = element.getBoundingClientRect();
-      element.dispatchEvent(
-        new MouseEvent('contextmenu', {
-          bubbles: true,
-          cancelable: true,
-          clientX: Math.round(rect.left + rect.width / 2),
-          clientY: Math.round(rect.top + rect.height / 2)
-        })
-      );
+      /*
+       * A TRUSTED right-click — the gesture a user actually performs.
+       *
+       * Measured rather than assumed: the file explorer's `contextmenu` path is NOT one of the ones
+       * Obsidian gates on `event.isTrusted`, so the dispatched version this replaces did reach the code
+       * under test and did pass. The markdown viewport's menu IS gated (which is what [[T586-P1]] ran
+       * into), so "a dispatched contextmenu works" is a property of this particular listener, not of
+       * Obsidian — and it is not one worth depending on.
+       *
+       * A trusted click also hit-tests for real, so the point matters. The file-explorer container is
+       * mostly covered by its own file rows, and the strip the plugin gives a menu to is the empty space
+       * below them — which is precisely where a user right-clicks, and where a dispatch aimed at the
+       * container's centre never had to land.
+       */
+      const point = findOwnPoint(element);
+      clickMouse({ button: 'right', x: point.x, y: point.y });
 
       // A short wait either way: this is used BOTH to show a menu appearing and
       // To show one not appearing, so a timeout here is a legitimate outcome
@@ -263,6 +277,31 @@ async function openContextMenuOn(selector: string): Promise<MenuProbe> {
         hasMenu: Boolean(menu),
         items: [...menu?.querySelectorAll('.menu-item-title') ?? []].map((item) => item.textContent)
       };
+
+      /*
+       * Finds a point the element itself owns — no child of it on top there. `elementFromPoint` is the
+       * same hit test a trusted click performs. An element entirely covered by its own children (a title
+       * row, say) has no such point, and its centre is used instead: the click lands on the child and
+       * bubbles up, which is what a user's does too.
+       *
+       * @param targetEl - The element to find a point of.
+       * @returns The viewport coordinates to click.
+       */
+      function findOwnPoint(targetEl: HTMLElement): Point {
+        const STEPS = 10;
+        const rect = targetEl.getBoundingClientRect();
+        // Bottom-up, so the empty strip below the last file row is found before the rows themselves.
+        for (let yIndex = STEPS - 1; yIndex >= 1; yIndex--) {
+          for (let xIndex = 1; xIndex < STEPS; xIndex++) {
+            const x = rect.left + rect.width * xIndex / STEPS;
+            const y = rect.top + rect.height * yIndex / STEPS;
+            if (document.elementFromPoint(x, y) === targetEl) {
+              return { x, y };
+            }
+          }
+        }
+        return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+      }
     },
     input: { selector },
     vaultPath: vaultPath()
