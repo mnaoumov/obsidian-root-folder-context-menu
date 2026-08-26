@@ -208,6 +208,9 @@ async function openContextMenuOn(selector: string): Promise<MenuProbe> {
         throw new TypeError(`No element matched ${targetSelector}.`);
       }
 
+      // Untrusted by necessity: the trusted `clickMouse` the desktop twin uses is built on
+      // `window.electron`, which does not exist on the phone. The isTrusted-gated half of
+      // Obsidian's contextmenu handling is therefore covered by the desktop suite alone.
       const rect = element.getBoundingClientRect();
       element.dispatchEvent(
         new MouseEvent('contextmenu', {
