@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.4.49
+
+- test(root-folder-context-menu): right-click and dismiss with trusted input on desktop
+
 ## 1.4.48
 
 - docs(readme): render the same in Obsidian's plugin page as on GitHub
