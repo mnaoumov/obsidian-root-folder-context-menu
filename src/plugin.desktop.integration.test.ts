@@ -189,7 +189,7 @@ async function dismissMenu(): Promise<void> {
 
       // A trusted Escape: Obsidian acts on real key input, so a dispatched one can be
       // Ignored outright while this still looked like it had dismissed the menu.
-      pressKey({ key: 'Escape' });
+      await pressKey({ key: 'Escape' });
       document.body.click();
 
       await waitUntil({
@@ -255,7 +255,7 @@ async function openContextMenuOn(selector: string): Promise<MenuProbe> {
        * container's centre never had to land.
        */
       const point = findOwnPoint(element);
-      clickMouse({ button: 'right', x: point.x, y: point.y });
+      await clickMouse({ button: 'right', x: point.x, y: point.y });
 
       // A short wait either way: this is used BOTH to show a menu appearing and
       // To show one not appearing, so a timeout here is a legitimate outcome

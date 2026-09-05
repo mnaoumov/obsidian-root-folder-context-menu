@@ -146,7 +146,7 @@ async function dismissMenu(): Promise<void> {
 
       // A trusted Escape: Obsidian acts on real key input, so a dispatched one can be
       // Ignored outright while this still looked like it had dismissed the menu.
-      pressKey({ key: 'Escape' });
+      await pressKey({ key: 'Escape' });
       document.body.click();
 
       await waitUntil({
@@ -192,7 +192,7 @@ async function rightClickBelowTheFiles(): Promise<MenuProbe> {
       // A TRUSTED right-click — the gesture a user actually performs, and the only kind guaranteed to
       // Reach a listener that checks `event.isTrusted`. This particular path does not check it, so the
       // Dispatch this replaces did work; the markdown viewport's menu does, and would not have.
-      clickMouse({
+      await clickMouse({
         button: 'right',
         x: containerRect.left + containerRect.width / 2,
         y: clientY
