@@ -180,15 +180,11 @@ describe('mobile store screenshots', () => {
  */
 async function dismissMenu(): Promise<void> {
   await evalInObsidian({
-    async callback({ lib: { waitUntil } }) {
+    async callback({ lib: { pressKey, waitUntil } }) {
       const MENU_TIMEOUT_IN_MILLISECONDS = 15_000;
       const SETTLE_DELAY_IN_MILLISECONDS = 600;
 
-      // `pressKey` is Electron-only, so the phone needs a synthetic event.
-      // Obsidian listens for keys on `document`, so this dismisses exactly as a
-      // Real key would.
-      document.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Escape' }));
-      document.body.click();
+      await pressKey({ key: 'Escape' });
 
       await waitUntil({
         message: 'the menu to close',
@@ -214,11 +210,10 @@ async function longPress(selector: string): Promise<MenuProbe> {
   await dismissMenu();
 
   return await evalInObsidian({
-    async callback({ lib: { waitUntil }, selector: targetSelector }) {
+    async callback({ lib: { clickElement, waitUntil }, selector: targetSelector }) {
       const MENU_TIMEOUT_IN_MILLISECONDS = 5000;
       const SETTLE_DELAY_IN_MILLISECONDS = 900;
       const CAPTURE_SETTLE_DELAY_IN_MILLISECONDS = 2000;
-      const HALF = 2;
 
       // Let the previous shot's capture settle: the metrics the capture sets
       // And clears tear down a menu opened too soon afterwards.
@@ -232,18 +227,10 @@ async function longPress(selector: string): Promise<MenuProbe> {
         throw new TypeError(`Nothing on screen matched ${targetSelector}.`);
       }
 
-      // Untrusted by necessity: the trusted `clickMouse` the desktop twin uses is built on
-      // `window.electron`, which does not exist on the phone. The isTrusted-gated half of
-      // Obsidian's contextmenu handling is therefore covered by the desktop suite alone.
-      const rect = element.getBoundingClientRect();
-      element.dispatchEvent(
-        new MouseEvent('contextmenu', {
-          bubbles: true,
-          cancelable: true,
-          clientX: Math.round(rect.left + rect.width / HALF),
-          clientY: Math.round(rect.top + rect.height / HALF)
-        })
-      );
+      // `button: 'right'` is the long press that opens Obsidian Mobile's context menu, so this
+      // Now exercises the isTrusted-gated half of Obsidian's contextmenu handling that the
+      // Dispatched event this replaced could never reach.
+      await clickElement({ button: 'right', element });
 
       // A short wait either way: this is used BOTH to show a menu appearing and
       // To show one not appearing, so a timeout here is a legitimate outcome
