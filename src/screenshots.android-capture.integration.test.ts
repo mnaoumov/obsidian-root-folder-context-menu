@@ -219,30 +219,8 @@ async function longPress(selector: string): Promise<MenuProbe> {
       // And clears tear down a menu opened too soon afterwards.
       await sleep(CAPTURE_SETTLE_DELAY_IN_MILLISECONDS);
 
-      // The drawer SLIDES, and a row read mid-animation is still off the left edge at zero
-      // Width — a menu anchored to that lands off screen. Width > 0 is not enough on its own:
-      // It becomes true EARLY in the slide, while the row is still travelling. A dispatched
-      // Event did not care, because it went to the element whatever its coordinates were; a
-      // Trusted long press is hit-tested at a point, so the row has to have STOPPED. Waiting
-      // For two consecutive reads at the same x is what "stopped" means here.
-      let previousLeft = NaN;
-      await waitUntil({
-        message: `${targetSelector} to stop sliding`,
-        predicate: () => {
-          const candidate = [...document.querySelectorAll(targetSelector)]
-            .find((row) => row.getBoundingClientRect().width > 0);
-          if (!candidate) {
-            return false;
-          }
-
-          const { left } = candidate.getBoundingClientRect();
-          const hasSettled = left === previousLeft;
-          previousLeft = left;
-          return hasSettled;
-        },
-        timeoutInMilliseconds: MENU_TIMEOUT_IN_MILLISECONDS
-      });
-
+      // The drawer SLIDES, and a row read mid-animation is still off the left
+      // Edge at zero width — a menu anchored to that lands off screen.
       const element = [...document.querySelectorAll(targetSelector)]
         .find((candidate) => candidate.getBoundingClientRect().width > 0);
       if (!(element instanceof HTMLElement)) {
