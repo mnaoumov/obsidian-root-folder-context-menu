@@ -184,12 +184,56 @@ async function dismissMenu(): Promise<void> {
       const MENU_TIMEOUT_IN_MILLISECONDS = 15_000;
       const SETTLE_DELAY_IN_MILLISECONDS = 600;
 
+      // ONLY when there is a menu to close. Escape is not scoped to the menu: with nothing to consume
+      // It, Obsidian Mobile applies it to the left drawer, and every press after that aims at a file
+      // List that is collapsed to zero width. The dispatched keydown this replaced was `isTrusted`-
+      // Gated and reached nothing at all, so pressing it unconditionally used to be harmless.
+      if (!document.body.querySelector('.menu')) {
+        return;
+      }
+
       await pressKey({ key: 'Escape' });
 
       await waitUntil({
         message: 'the menu to close',
         predicate: () => !document.body.querySelector('.menu'),
         timeoutInMilliseconds: MENU_TIMEOUT_IN_MILLISECONDS
+      });
+
+      await sleep(SETTLE_DELAY_IN_MILLISECONDS);
+    },
+    vaultPath: vaultPath()
+  });
+}
+
+/**
+ * Re-opens the left drawer, WITHOUT the first-open toggle.
+ *
+ * Escape does not stop at the menu: measured on a device, one press closes the menu AND leaves the
+ * left split collapsed with the file list at 0x0. Every later press then aims at a zero-size element
+ * and photographs a drawer that is not there.
+ *
+ * `expand()` plus `revealLeaf` brings it back intact. {@link openDrawer}'s `collapse()` + `expand()`
+ * must NOT be reused for this: that toggle exists for the FIRST open, against a drawer that is still
+ * `display: none`, and run against an already-open drawer it shuts it for the rest of the session.
+ */
+async function ensureDrawerOpen(): Promise<void> {
+  await evalInObsidian({
+    async callback({ app, lib: { waitUntil } }) {
+      const DRAWER_TIMEOUT_IN_MILLISECONDS = 20_000;
+      const SETTLE_DELAY_IN_MILLISECONDS = 900;
+
+      app.workspace.leftSplit.expand();
+
+      const fileExplorerLeaf = app.workspace.getLeavesOfType('file-explorer')[0];
+      if (fileExplorerLeaf) {
+        await app.workspace.revealLeaf(fileExplorerLeaf);
+      }
+
+      await waitUntil({
+        message: 'the left drawer to be open again',
+        predicate: () => [...document.querySelectorAll('.nav-files-container .nav-file')].some((row) => row.getBoundingClientRect().width > 0),
+        timeoutInMilliseconds: DRAWER_TIMEOUT_IN_MILLISECONDS
       });
 
       await sleep(SETTLE_DELAY_IN_MILLISECONDS);
@@ -208,6 +252,7 @@ async function dismissMenu(): Promise<void> {
  */
 async function longPress(selector: string): Promise<MenuProbe> {
   await dismissMenu();
+  await ensureDrawerOpen();
 
   return await evalInObsidian({
     async callback({ lib: { clickElement, waitUntil }, selector: targetSelector }) {
