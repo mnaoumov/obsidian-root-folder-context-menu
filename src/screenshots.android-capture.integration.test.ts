@@ -180,20 +180,60 @@ describe('mobile store screenshots', () => {
  */
 async function dismissMenu(): Promise<void> {
   await evalInObsidian({
-    async callback({ lib: { waitUntil } }) {
+    async callback({ lib: { pressKey, waitUntil } }) {
       const MENU_TIMEOUT_IN_MILLISECONDS = 15_000;
       const SETTLE_DELAY_IN_MILLISECONDS = 600;
 
-      // `pressKey` is Electron-only, so the phone needs a synthetic event.
-      // Obsidian listens for keys on `document`, so this dismisses exactly as a
-      // Real key would.
-      document.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Escape' }));
-      document.body.click();
+      // ONLY when there is a menu to close. Escape is not scoped to the menu: with nothing to consume
+      // It, Obsidian Mobile applies it to the left drawer, and every press after that aims at a file
+      // List that is collapsed to zero width. The dispatched keydown this replaced was `isTrusted`-
+      // Gated and reached nothing at all, so pressing it unconditionally used to be harmless.
+      if (!document.body.querySelector('.menu')) {
+        return;
+      }
+
+      await pressKey({ key: 'Escape' });
 
       await waitUntil({
         message: 'the menu to close',
         predicate: () => !document.body.querySelector('.menu'),
         timeoutInMilliseconds: MENU_TIMEOUT_IN_MILLISECONDS
+      });
+
+      await sleep(SETTLE_DELAY_IN_MILLISECONDS);
+    },
+    vaultPath: vaultPath()
+  });
+}
+
+/**
+ * Re-opens the left drawer, WITHOUT the first-open toggle.
+ *
+ * Escape does not stop at the menu: measured on a device, one press closes the menu AND leaves the
+ * left split collapsed with the file list at 0x0. Every later press then aims at a zero-size element
+ * and photographs a drawer that is not there.
+ *
+ * `expand()` plus `revealLeaf` brings it back intact. {@link openDrawer}'s `collapse()` + `expand()`
+ * must NOT be reused for this: that toggle exists for the FIRST open, against a drawer that is still
+ * `display: none`, and run against an already-open drawer it shuts it for the rest of the session.
+ */
+async function ensureDrawerOpen(): Promise<void> {
+  await evalInObsidian({
+    async callback({ app, lib: { waitUntil } }) {
+      const DRAWER_TIMEOUT_IN_MILLISECONDS = 20_000;
+      const SETTLE_DELAY_IN_MILLISECONDS = 900;
+
+      app.workspace.leftSplit.expand();
+
+      const fileExplorerLeaf = app.workspace.getLeavesOfType('file-explorer')[0];
+      if (fileExplorerLeaf) {
+        await app.workspace.revealLeaf(fileExplorerLeaf);
+      }
+
+      await waitUntil({
+        message: 'the left drawer to be open again',
+        predicate: () => [...document.querySelectorAll('.nav-files-container .nav-file')].some((row) => row.getBoundingClientRect().width > 0),
+        timeoutInMilliseconds: DRAWER_TIMEOUT_IN_MILLISECONDS
       });
 
       await sleep(SETTLE_DELAY_IN_MILLISECONDS);
@@ -212,13 +252,13 @@ async function dismissMenu(): Promise<void> {
  */
 async function longPress(selector: string): Promise<MenuProbe> {
   await dismissMenu();
+  await ensureDrawerOpen();
 
   return await evalInObsidian({
-    async callback({ lib: { waitUntil }, selector: targetSelector }) {
+    async callback({ lib: { clickElement, waitUntil }, selector: targetSelector }) {
       const MENU_TIMEOUT_IN_MILLISECONDS = 5000;
       const SETTLE_DELAY_IN_MILLISECONDS = 900;
       const CAPTURE_SETTLE_DELAY_IN_MILLISECONDS = 2000;
-      const HALF = 2;
 
       // Let the previous shot's capture settle: the metrics the capture sets
       // And clears tear down a menu opened too soon afterwards.
@@ -232,18 +272,10 @@ async function longPress(selector: string): Promise<MenuProbe> {
         throw new TypeError(`Nothing on screen matched ${targetSelector}.`);
       }
 
-      // Untrusted by necessity: the trusted `clickMouse` the desktop twin uses is built on
-      // `window.electron`, which does not exist on the phone. The isTrusted-gated half of
-      // Obsidian's contextmenu handling is therefore covered by the desktop suite alone.
-      const rect = element.getBoundingClientRect();
-      element.dispatchEvent(
-        new MouseEvent('contextmenu', {
-          bubbles: true,
-          cancelable: true,
-          clientX: Math.round(rect.left + rect.width / HALF),
-          clientY: Math.round(rect.top + rect.height / HALF)
-        })
-      );
+      // `button: 'right'` is the long press that opens Obsidian Mobile's context menu, so this
+      // Now exercises the isTrusted-gated half of Obsidian's contextmenu handling that the
+      // Dispatched event this replaced could never reach.
+      await clickElement({ button: 'right', element });
 
       // A short wait either way: this is used BOTH to show a menu appearing and
       // To show one not appearing, so a timeout here is a legitimate outcome
