@@ -1,8 +1,8 @@
 /**
  * @file
  *
- * Produces the desktop screenshots the community-store listing needs
- * (T461-P21), driving a real Obsidian and writing
+ * Produces the desktop screenshots the community-store listing needs,
+ * driving a real Obsidian and writing
  * `images/screenshots/screenshot-desktop-N.png`.
  *
  * TWO shots, not five. This plugin fills out a context menu Obsidian only
@@ -14,7 +14,7 @@
  * seven-entry one has been seen.
  *
  * The mobile counterpart lives in `screenshots.android-capture`. It could not
- * exist until T506-P32: the plugin anchored to `.workspace-drawer-vault-switcher`,
+ * exist until the mobile half was fixed: the plugin anchored to `.workspace-drawer-vault-switcher`,
  * which Obsidian builds only inside `if (isDesktopApp)`, so on a phone the
  * anchor was `null` and both listeners died with it. It now falls back to the
  * drawer's vault-name row.
