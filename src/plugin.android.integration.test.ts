@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * Drives the plugin's actual behavior on a real Android device (T506-P32).
+ * Drives the plugin's actual behavior on a real Android device.
  *
  * This suite exists because the mobile half was broken for its whole life and
  * nothing noticed: the plugin anchored its menu to

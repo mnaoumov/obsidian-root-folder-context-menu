@@ -1,11 +1,11 @@
 /**
  * @file
  *
- * Produces the mobile screenshots the community-store listing needs
- * (T461-P21), driving Obsidian Mobile on a real Android emulator and writing
+ * Produces the mobile screenshots the community-store listing needs,
+ * driving Obsidian Mobile on a real Android emulator and writing
  * `images/screenshots/screenshot-mobile-N.png`.
  *
- * This set exists because T506-P32 landed. The plugin's mobile half was broken
+ * This set exists because the mobile half was fixed. It had been broken
  * for its whole life — it anchored to `.workspace-drawer-vault-switcher`, which
  * Obsidian builds only inside `if (isDesktopApp)` — so until that fix there was
  * genuinely nothing on a phone to photograph.
@@ -29,7 +29,8 @@
  * capped near 30 seconds and one closure doing the whole flow times out.
  *
  * There is no mobile equivalent of the desktop viewport override, so the AVD is
- * built at exactly 900x1600 — see [[T461-P21]] for its one-time provisioning.
+ * built at exactly 900x1600. Its one-time provisioning is described beside
+ * `SCREENSHOT_AVD_NAME` in `scripts/vitest-config.ts`.
  */
 
 import {

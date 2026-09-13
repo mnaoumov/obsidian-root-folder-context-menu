@@ -6,7 +6,7 @@
  * menu on both of the spots this plugin hooks.
  *
  * The suite exists because the desktop hook can break exactly as silently as
- * the mobile one did (T506-P32): the anchor is resolved by a `querySelector`
+ * the mobile one did: the anchor is resolved by a `querySelector`
  * that returns `null` the moment Obsidian renames or moves the element, and
  * nothing else in the repo would notice.
  */
@@ -251,8 +251,8 @@ async function openContextMenuOn(selector: string): Promise<MenuProbe> {
        *
        * Measured rather than assumed: the file explorer's `contextmenu` path is NOT one of the ones
        * Obsidian gates on `event.isTrusted`, so the dispatched version this replaces did reach the code
-       * under test and did pass. The markdown viewport's menu IS gated (which is what [[T586-P1]] ran
-       * into), so "a dispatched contextmenu works" is a property of this particular listener, not of
+       * under test and did pass. The markdown viewport's menu IS gated — a dispatched `contextmenu` there
+       * reaches nothing — so "a dispatched contextmenu works" is a property of this particular listener, not of
        * Obsidian — and it is not one worth depending on.
        *
        * A trusted click also hit-tests for real, so the point matters. The file-explorer container is
