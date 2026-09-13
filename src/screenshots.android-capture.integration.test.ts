@@ -75,7 +75,7 @@ const HEIGHT_IN_PIXELS = 1600;
 
 /**
  * Base font size for the mobile shots, below the 16px default and matching the
- * rest of the fleet. Note it does NOT govern the menu: the bottom sheet's rows
+ * author's other plugin shots. Note it does NOT govern the menu: the bottom sheet's rows
  * are fixed dp, so 11 and 13 produce the same sheet, pixel for pixel.
  */
 const MOBILE_FONT_SIZE_IN_PIXELS = 13;
