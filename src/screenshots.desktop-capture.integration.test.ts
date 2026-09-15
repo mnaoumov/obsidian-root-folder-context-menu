@@ -97,7 +97,7 @@ beforeAll(async () => {
       app.changeTheme('obsidian');
 
       // The file explorer IS the subject here, so it is the one thing that must
-      // Be open — the opposite of every other plugin's shots, which collapse it.
+      // be open — the opposite of every other plugin's shots, which collapse it.
       app.workspace.leftSplit.expand();
       const fileExplorerLeaf = app.workspace.getLeavesOfType('file-explorer')[0];
       if (fileExplorerLeaf) {
@@ -127,9 +127,9 @@ describe('desktop store screenshots', () => {
 
   it('2 - the same right-click without the plugin', async () => {
     // Second, not first: the reader has to have seen the full menu before a
-    // Shorter one means anything. Obsidian does offer a few entries here on its
-    // Own, so the contrast is four entries against seven rather than a menu
-    // Against nothing.
+    // shorter one means anything. Obsidian does offer a few entries here on its
+    // own, so the contrast is four entries against seven rather than a menu
+    // against nothing.
     await dismissMenu();
     await setPluginEnabled(false);
     const result = await rightClickBelowTheFiles();
@@ -151,7 +151,7 @@ async function dismissMenu(): Promise<void> {
       const SETTLE_DELAY_IN_MILLISECONDS = 600;
 
       // A trusted Escape: Obsidian acts on real key input, so a dispatched one can be
-      // Ignored outright while this still looked like it had dismissed the menu.
+      // ignored outright while this still looked like it had dismissed the menu.
       await pressKey({ key: 'Escape' });
       document.body.click();
 
@@ -191,13 +191,13 @@ async function rightClickBelowTheFiles(): Promise<MenuProbe> {
       const lastFileRect = lastFile?.getBoundingClientRect();
 
       // Below the last file but inside the container: that empty strip is the
-      // Exact spot the plugin gives a menu to, and clicking a FILE instead
-      // Would photograph Obsidian's ordinary file menu.
+      // exact spot the plugin gives a menu to, and clicking a FILE instead
+      // would photograph Obsidian's ordinary file menu.
       const clientY = (lastFileRect?.bottom ?? containerRect.top) + BELOW_LAST_FILE_OFFSET_IN_PIXELS;
 
       // A TRUSTED right-click — the gesture a user actually performs, and the only kind guaranteed to
-      // Reach a listener that checks `event.isTrusted`. This particular path does not check it, so the
-      // Dispatch this replaces did work; the markdown viewport's menu does, and would not have.
+      // reach a listener that checks `event.isTrusted`. This particular path does not check it, so the
+      // dispatch this replaces did work; the markdown viewport's menu does, and would not have.
       await clickMouse({
         button: 'right',
         x: containerRect.left + containerRect.width / 2,
@@ -205,8 +205,8 @@ async function rightClickBelowTheFiles(): Promise<MenuProbe> {
       });
 
       // A short wait either way: this is used BOTH to show a menu appearing and
-      // To show one not appearing, so a timeout here is a legitimate outcome
-      // Rather than a failure.
+      // to show one not appearing, so a timeout here is a legitimate outcome
+      // rather than a failure.
       try {
         await waitUntil({
           message: 'the root context menu to open',
@@ -247,8 +247,8 @@ async function setPluginEnabled(isEnabled: boolean): Promise<void> {
       }
 
       // The plugin wires its listener once the layout is ready, so a plugin
-      // Re-enabled mid-session needs the event to arrive again or it sits there
-      // Inert and the two frames become the same picture.
+      // re-enabled mid-session needs the event to arrive again or it sits there
+      // inert and the two frames become the same picture.
       app.workspace.trigger('layout-change');
 
       await sleep(SETTLE_DELAY_IN_MILLISECONDS);

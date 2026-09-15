@@ -102,8 +102,8 @@ describe('root context menu on Android', () => {
     const folderMenu = await openContextMenuOn(`.nav-folder-title[data-path="${STAGED_FOLDER_PATH}"]`);
 
     // An ordinary folder's menu carries every one of them, which is what makes
-    // Their absence from the root's menu mean something rather than being
-    // Vacuously true of titles this Obsidian never renders.
+    // their absence from the root's menu mean something rather than being
+    // vacuously true of titles this Obsidian never renders.
     for (const title of filteredTitles) {
       expect(folderMenu.items).toContain(title);
     }
@@ -129,20 +129,20 @@ describe('root context menu on Android', () => {
 
     try {
       // On a phone the vault-name row has NO menu of its own, so here the
-      // Plugin's contribution really is the whole menu rather than a few extra
-      // Entries — unlike the file list below, where Obsidian offers four.
+      // plugin's contribution really is the whole menu rather than a few extra
+      // entries — unlike the file list below, where Obsidian offers four.
       const anchorMenu = await openContextMenuOn(ROOT_ANCHOR_SELECTOR);
       expect(anchorMenu.hasMenu).toBe(false);
 
       const containerMenu = await openContextMenuOn(NAV_FILES_CONTAINER_SELECTOR);
 
       // The POSITIVE CONTROL, and it is the whole reason this test means anything: the assertions
-      // Below say only that entries are ABSENT, which an EMPTY array satisfies. So a long press that
-      // Silently did nothing — a broken gesture, a drawer that had closed, a menu that never
-      // Opened — would read as "the plugin contributed nothing" and pass. That is exactly what
-      // Happened while a harness defect was delivering every long press twice. Obsidian's own menu
-      // Here is not the plugin's, so it must still be there with the plugin off; if it is not, the
-      // Gesture failed and the rest of this test proves nothing.
+      // below say only that entries are ABSENT, which an EMPTY array satisfies. So a long press that
+      // silently did nothing — a broken gesture, a drawer that had closed, a menu that never
+      // opened — would read as "the plugin contributed nothing" and pass. That is exactly what
+      // happened while a harness defect was delivering every long press twice. Obsidian's own menu
+      // here is not the plugin's, so it must still be there with the plugin off; if it is not, the
+      // gesture failed and the rest of this test proves nothing.
       expect(containerMenu.hasMenu).toBe(true);
 
       for (const entry of PLUGIN_ONLY_ENTRIES) {
@@ -164,9 +164,9 @@ async function dismissMenu(): Promise<void> {
       const SETTLE_DELAY_IN_MILLISECONDS = 600;
 
       // ONLY when there is a menu to close. Escape is not scoped to the menu: with nothing to consume
-      // It, Obsidian Mobile applies it to the left drawer, and every press after that aims at a file
-      // List that is collapsed to zero width. The dispatched keydown this replaced was `isTrusted`-
-      // Gated and reached nothing at all, so pressing it unconditionally used to be harmless.
+      // it, Obsidian Mobile applies it to the left drawer, and every press after that aims at a file
+      // list that is collapsed to zero width. The dispatched keydown this replaced was `isTrusted`-
+      // gated and reached nothing at all, so pressing it unconditionally used to be harmless.
       if (!document.body.querySelector('.menu')) {
         return;
       }
@@ -256,9 +256,9 @@ async function openContextMenuOn(selector: string): Promise<MenuProbe> {
       const SETTLE_DELAY_IN_MILLISECONDS = 900;
 
       // ON SCREEN, not merely present. A collapsed drawer leaves the file list matching its selector at
-      // Zero width, and a trusted press aimed at a zero-size element is hit-tested to whatever is
-      // Really at that point — so it silently raises nothing, and an assertion that an entry is ABSENT
-      // Passes against the empty menu. Failing loudly here is what keeps that from reading as a pass.
+      // zero width, and a trusted press aimed at a zero-size element is hit-tested to whatever is
+      // really at that point — so it silently raises nothing, and an assertion that an entry is ABSENT
+      // passes against the empty menu. Failing loudly here is what keeps that from reading as a pass.
       const element = [...document.querySelectorAll(targetSelector)]
         .find((candidate) => candidate.getBoundingClientRect().width > 0);
       if (!(element instanceof HTMLElement)) {
@@ -266,13 +266,13 @@ async function openContextMenuOn(selector: string): Promise<MenuProbe> {
       }
 
       // `button: 'right'` is the long press that opens Obsidian Mobile's context menu, so this
-      // Now exercises the isTrusted-gated half of Obsidian's contextmenu handling that the
-      // Dispatched event this replaced could never reach.
+      // now exercises the isTrusted-gated half of Obsidian's contextmenu handling that the
+      // dispatched event this replaced could never reach.
       await clickElement({ button: 'right', element });
 
       // A short wait either way: this is used BOTH to show a menu appearing and
-      // To show one not appearing, so a timeout here is a legitimate outcome
-      // Rather than a failure.
+      // to show one not appearing, so a timeout here is a legitimate outcome
+      // rather than a failure.
       try {
         await waitUntil({
           message: 'the root context menu to open',
@@ -307,7 +307,7 @@ async function openDrawer(): Promise<void> {
 
       // `collapsed` lies: it reads false while the drawer element is still
       // `display: none`, and `expand()` is then a no-op that returns happily
-      // And shows nothing. Toggling is what re-runs the code that displays it.
+      // and shows nothing. Toggling is what re-runs the code that displays it.
       app.workspace.leftSplit.collapse();
       app.workspace.leftSplit.expand();
 
@@ -317,7 +317,7 @@ async function openDrawer(): Promise<void> {
       }
 
       // The drawer SLIDES, so it is measured rather than assumed: a row read
-      // Mid-animation is still off the left edge at zero width.
+      // mid-animation is still off the left edge at zero width.
       await waitUntil({
         message: 'the left drawer to finish sliding open',
         predicate: () => [...document.querySelectorAll('.nav-files-container .nav-file')].some((row) => row.getBoundingClientRect().width > 0),
@@ -347,8 +347,8 @@ async function setPluginEnabled(isEnabled: boolean): Promise<void> {
       }
 
       // The plugin wires its listener once the layout is ready, so a plugin
-      // Re-enabled mid-session needs the event to arrive again or it sits there
-      // Inert.
+      // re-enabled mid-session needs the event to arrive again or it sits there
+      // inert.
       app.workspace.trigger('layout-change');
 
       await sleep(SETTLE_DELAY_IN_MILLISECONDS);
