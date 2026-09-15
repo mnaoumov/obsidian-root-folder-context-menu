@@ -139,9 +139,9 @@ beforeAll(async () => {
 describe('mobile store screenshots', () => {
   it('1 - the full menu the plugin gives the root', async () => {
     // The vault name first, and only as an ASSERTION: it is the anchor the
-    // Plugin falls back to on mobile (the desktop vault switcher does not exist
-    // Here), so it is the thing a phone could plausibly get wrong. It is not
-    // Photographed — its sheet is entry-for-entry the frame below.
+    // plugin falls back to on mobile (the desktop vault switcher does not exist
+    // here), so it is the thing a phone could plausibly get wrong. It is not
+    // photographed — its sheet is entry-for-entry the frame below.
     const anchorMenu = await longPress(ROOT_ANCHOR_SELECTOR);
     expect(anchorMenu.hasMenu).toBe(true);
 
@@ -157,9 +157,9 @@ describe('mobile store screenshots', () => {
 
   it('2 - the same long press without the plugin', async () => {
     // Second, not first: the reader has to have seen the full menu before a
-    // Shorter one means anything. Obsidian does offer a few entries here on its
-    // Own, so the contrast is four entries against six rather than a menu
-    // Against nothing.
+    // shorter one means anything. Obsidian does offer a few entries here on its
+    // own, so the contrast is four entries against six rather than a menu
+    // against nothing.
     await dismissMenu();
     await setPluginEnabled(false);
 
@@ -186,9 +186,9 @@ async function dismissMenu(): Promise<void> {
       const SETTLE_DELAY_IN_MILLISECONDS = 600;
 
       // ONLY when there is a menu to close. Escape is not scoped to the menu: with nothing to consume
-      // It, Obsidian Mobile applies it to the left drawer, and every press after that aims at a file
-      // List that is collapsed to zero width. The dispatched keydown this replaced was `isTrusted`-
-      // Gated and reached nothing at all, so pressing it unconditionally used to be harmless.
+      // it, Obsidian Mobile applies it to the left drawer, and every press after that aims at a file
+      // list that is collapsed to zero width. The dispatched keydown this replaced was `isTrusted`-
+      // gated and reached nothing at all, so pressing it unconditionally used to be harmless.
       if (!document.body.querySelector('.menu')) {
         return;
       }
@@ -262,11 +262,11 @@ async function longPress(selector: string): Promise<MenuProbe> {
       const CAPTURE_SETTLE_DELAY_IN_MILLISECONDS = 2000;
 
       // Let the previous shot's capture settle: the metrics the capture sets
-      // And clears tear down a menu opened too soon afterwards.
+      // and clears tear down a menu opened too soon afterwards.
       await sleep(CAPTURE_SETTLE_DELAY_IN_MILLISECONDS);
 
       // The drawer SLIDES, and a row read mid-animation is still off the left
-      // Edge at zero width — a menu anchored to that lands off screen.
+      // edge at zero width — a menu anchored to that lands off screen.
       const element = [...document.querySelectorAll(targetSelector)]
         .find((candidate) => candidate.getBoundingClientRect().width > 0);
       if (!(element instanceof HTMLElement)) {
@@ -274,13 +274,13 @@ async function longPress(selector: string): Promise<MenuProbe> {
       }
 
       // `button: 'right'` is the long press that opens Obsidian Mobile's context menu, so this
-      // Now exercises the isTrusted-gated half of Obsidian's contextmenu handling that the
-      // Dispatched event this replaced could never reach.
+      // now exercises the isTrusted-gated half of Obsidian's contextmenu handling that the
+      // dispatched event this replaced could never reach.
       await clickElement({ button: 'right', element });
 
       // A short wait either way: this is used BOTH to show a menu appearing and
-      // To show one not appearing, so a timeout here is a legitimate outcome
-      // Rather than a failure.
+      // to show one not appearing, so a timeout here is a legitimate outcome
+      // rather than a failure.
       try {
         await waitUntil({
           message: 'the root context menu to open',
@@ -315,7 +315,7 @@ async function openDrawer(): Promise<void> {
 
       // `collapsed` lies: it reads false while the drawer element is still
       // `display: none`, and `expand()` is then a no-op that returns happily
-      // And shows nothing. Toggling is what re-runs the code that displays it.
+      // and shows nothing. Toggling is what re-runs the code that displays it.
       app.workspace.leftSplit.collapse();
       app.workspace.leftSplit.expand();
 
@@ -325,7 +325,7 @@ async function openDrawer(): Promise<void> {
       }
 
       // The drawer SLIDES, so it is measured rather than assumed: a row read
-      // Mid-animation is still off the left edge at zero width.
+      // mid-animation is still off the left edge at zero width.
       await waitUntil({
         message: 'the left drawer to finish sliding open',
         predicate: () => [...document.querySelectorAll('.nav-files-container .nav-file')].some((row) => row.getBoundingClientRect().width > 0),
@@ -356,8 +356,8 @@ async function setPluginEnabled(isEnabled: boolean): Promise<void> {
       }
 
       // The plugin wires its listener once the layout is ready, so a plugin
-      // Re-enabled mid-session needs the event to arrive again or it sits there
-      // Inert and the frames become the same picture.
+      // re-enabled mid-session needs the event to arrive again or it sits there
+      // inert and the frames become the same picture.
       app.workspace.trigger('layout-change');
 
       await sleep(SETTLE_DELAY_IN_MILLISECONDS);
@@ -378,8 +378,8 @@ async function shoot(index: number, caption: string): Promise<void> {
   const captured = await captureObsidianScreenshot({ vaultPath: vaultPath() });
 
   // The AVD is 900x1600, so the device frame IS the store size. Asserting it
-  // Here is what keeps that true: run this against any other AVD and it fails
-  // Loudly instead of quietly shipping an off-spec image.
+  // here is what keeps that true: run this against any other AVD and it fails
+  // loudly instead of quietly shipping an off-spec image.
   expect(readPngDimensions(captured)).toStrictEqual({
     heightInPixels: HEIGHT_IN_PIXELS,
     widthInPixels: WIDTH_IN_PIXELS

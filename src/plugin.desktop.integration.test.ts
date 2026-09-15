@@ -104,7 +104,7 @@ beforeAll(async () => {
       const SETTLE_DELAY_IN_MILLISECONDS = 1000;
 
       // The file explorer IS the subject here, so it is the one thing that must
-      // Be open.
+      // be open.
       app.workspace.leftSplit.expand();
       const fileExplorerLeaf = app.workspace.getLeavesOfType('file-explorer')[0];
       if (fileExplorerLeaf) {
@@ -139,15 +139,15 @@ describe('root context menu on desktop', () => {
     const rootMenu = await openContextMenuOn(ROOT_ANCHOR_SELECTOR);
 
     // An ordinary folder's menu really does carry every one of them, which is
-    // What makes their absence from the root's menu mean something rather than
-    // Being vacuously true of titles this Obsidian never renders.
+    // what makes their absence from the root's menu mean something rather than
+    // being vacuously true of titles this Obsidian never renders.
     for (const title of filteredTitles) {
       expect(folderMenu.items).toContain(title);
       expect(rootMenu.items).not.toContain(title);
     }
 
     // And everything else that folder offers is on the root's menu too. That is
-    // The plugin's whole claim, asserted as the README states it rather than as
+    // the plugin's whole claim, asserted as the README states it rather than as
     // A hand-listed set of entries that would drift from it.
     const survivingTitles = folderMenu.items.filter((item) => !filteredTitles.includes(item));
     for (const title of survivingTitles) {
@@ -169,7 +169,7 @@ describe('root context menu on desktop', () => {
 
     try {
       // The assertion is on the plugin's OWN entries, not on the menu being
-      // Absent: Obsidian offers a few of its own at both spots either way, so
+      // absent: Obsidian offers a few of its own at both spots either way, so
       // "no menu" would be the wrong thing to demand.
       const anchorMenu = await openContextMenuOn(ROOT_ANCHOR_SELECTOR);
       expect(anchorMenu.items).not.toContain(PLUGIN_ONLY_ANCHOR_ENTRY);
@@ -194,7 +194,7 @@ async function dismissMenu(): Promise<void> {
       const SETTLE_DELAY_IN_MILLISECONDS = 600;
 
       // A trusted Escape: Obsidian acts on real key input, so a dispatched one can be
-      // Ignored outright while this still looked like it had dismissed the menu.
+      // ignored outright while this still looked like it had dismissed the menu.
       await pressKey({ key: 'Escape' });
       document.body.click();
 
@@ -264,8 +264,8 @@ async function openContextMenuOn(selector: string): Promise<MenuProbe> {
       await clickMouse({ button: 'right', x: point.x, y: point.y });
 
       // A short wait either way: this is used BOTH to show a menu appearing and
-      // To show one not appearing, so a timeout here is a legitimate outcome
-      // Rather than a failure.
+      // to show one not appearing, so a timeout here is a legitimate outcome
+      // rather than a failure.
       try {
         await waitUntil({
           message: 'the root context menu to open',
@@ -331,8 +331,8 @@ async function setPluginEnabled(isEnabled: boolean): Promise<void> {
       }
 
       // The plugin wires its listener once the layout is ready, so a plugin
-      // Re-enabled mid-session needs the event to arrive again or it sits there
-      // Inert.
+      // re-enabled mid-session needs the event to arrive again or it sits there
+      // inert.
       app.workspace.trigger('layout-change');
 
       await sleep(SETTLE_DELAY_IN_MILLISECONDS);
