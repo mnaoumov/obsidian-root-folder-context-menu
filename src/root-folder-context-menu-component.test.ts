@@ -38,12 +38,12 @@ interface AppGlobal {
 
 interface ComponentPrivate {
   fileExplorerView?: FileExplorerViewLike;
-  handleFileMenuEvent(menu: Menu, file: FileLike): void;
-  openContextMenu($event: Event, rootAnchorEl: HTMLElement): Promise<void>;
+  handleFileMenuEvent: (menu: Menu, file: FileLike) => void;
+  openContextMenu: ($event: Event, rootAnchorEl: HTMLElement) => Promise<void>;
 }
 
 interface FileExplorerLeafLike {
-  loadIfDeferred(): Promise<void>;
+  loadIfDeferred: () => Promise<void>;
   view: FileExplorerViewLike;
 }
 
@@ -53,7 +53,7 @@ interface FileExplorerPluginInstanceLike {
 
 interface FileExplorerViewLike {
   files: Map<unknown, unknown>;
-  openFileContextMenu(event: Event, fileItemElement: HTMLElement): void;
+  openFileContextMenu: (event: Event, fileItemElement: HTMLElement) => void;
 }
 
 interface FileLike {

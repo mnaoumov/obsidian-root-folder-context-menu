@@ -58,7 +58,7 @@ import {
  * declare. Setting `baseFontSize` alone changes nothing on screen.
  */
 interface FontSizeApp {
-  updateFontSize(this: void): void;
+  updateFontSize: (this: void) => void;
 }
 
 /**
