@@ -32,7 +32,7 @@ caption: Turn the plugin off
 await require('/demoSetup.ts').disablePlugin(app);
 ```
 
-Manual equivalent: toggle **Root Folder Context Menu** off in **Settings -> Community plugins**.
+Manual equivalent: toggle **`Root Folder Context Menu`** off in **Settings -> Community plugins**.
 
 Right-click the vault-name row now and count the entries - Obsidian offers a couple of its own. Then turn it back on and right-click again:
 
@@ -43,7 +43,7 @@ caption: Turn the plugin back on
 await require('/demoSetup.ts').enablePlugin(app);
 ```
 
-Manual equivalent: toggle **Root Folder Context Menu** back on in the same place.
+Manual equivalent: toggle **`Root Folder Context Menu`** back on in the same place.
 
 The second menu is the one every other folder already had.
 

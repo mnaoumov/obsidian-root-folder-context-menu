@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Root Folder Context Menu enables the right-click context menu for the vault root folder in Obsidian's File Explorer, which Obsidian normally only offers for non-root folders. It is built on `obsidian-dev-utils`.
+`Root Folder Context Menu` enables the right-click context menu for the vault root folder in Obsidian's File Explorer, which Obsidian normally only offers for non-root folders. It is built on `obsidian-dev-utils`.
 
 ## Commands
 
