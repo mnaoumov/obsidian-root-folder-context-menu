@@ -14,7 +14,7 @@ const FILLER_NOTE_COUNT = 8;
  * Turns the plugin off, so the reader can right-click the same spot and see what Obsidian offers on
  * its own — which is the honest comparison, since those spots are not menu-less, just sparse.
  *
- * Manual equivalent: toggle **Root Folder Context Menu** off in **Settings -> Community plugins**.
+ * Manual equivalent: toggle **`Root Folder Context Menu`** off in **Settings -> Community plugins**.
  */
 export async function disablePlugin(app: App): Promise<void> {
   await disableCommunityPlugin({ app, pluginId: PLUGIN_ID });
@@ -24,7 +24,7 @@ export async function disablePlugin(app: App): Promise<void> {
 /**
  * Turns the plugin back on.
  *
- * Manual equivalent: toggle **Root Folder Context Menu** back on in **Settings -> Community plugins**.
+ * Manual equivalent: toggle **`Root Folder Context Menu`** back on in **Settings -> Community plugins**.
  */
 export async function enablePlugin(app: App): Promise<void> {
   await enableCommunityPlugin({ app, pluginId: PLUGIN_ID });
