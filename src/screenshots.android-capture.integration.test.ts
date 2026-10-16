@@ -54,14 +54,6 @@ import {
 } from 'vitest';
 
 /**
- * `App`, reduced to the font-size applier that `obsidian-typings` does not
- * declare. Setting `baseFontSize` alone changes nothing on screen.
- */
-interface FontSizeApp {
-  updateFontSize: (this: void) => void;
-}
-
-/**
  * What a long press produced: whether a menu opened, and the entries on it.
  */
 interface MenuProbe {
@@ -124,8 +116,7 @@ beforeAll(async () => {
       app.changeTheme('obsidian');
 
       app.vault.setConfig('baseFontSize', fontSizeInPixels);
-      const fontApp: unknown = app;
-      (fontApp as FontSizeApp).updateFontSize();
+      app.updateFontSize();
 
       await sleep(SETTLE_DELAY_IN_MILLISECONDS);
     },
