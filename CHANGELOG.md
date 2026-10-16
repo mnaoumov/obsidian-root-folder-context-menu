@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.4.52
+
+- build(deps): merge moving off obsidian-dev-utils onto the @mnaoumov packages
+- docs: merge marking plugin names as code in markdown and comments
+- test: merge using the obsidian-typings declarations of Obsidian internals
+
 ## 1.4.51
 
 - test(screenshots): merge the move onto applyObsidianTheme
