@@ -1,5 +1,5 @@
-import { OpenDemoVaultCommandHandler } from 'obsidian-dev-utils/obsidian/command-handlers/open-demo-vault-command-handler';
-import { PluginBase } from 'obsidian-dev-utils/obsidian/plugin/plugin';
+import { OpenDemoVaultCommandHandler } from '@mnaoumov/obsidian-lib/command-handlers/open-demo-vault-command-handler';
+import { PluginBase } from '@mnaoumov/obsidian-lib/plugin/plugin';
 
 import { RootFolderContextMenuComponent } from './root-folder-context-menu-component.ts';
 

@@ -6,11 +6,11 @@ import type {
   MenuItem as MenuItemType
 } from 'obsidian';
 
-import { waitForAllAsyncOperations } from 'obsidian-dev-utils/async';
-import { noop } from 'obsidian-dev-utils/function';
-import { castTo } from 'obsidian-dev-utils/object-utils';
-import { ConsoleDebugComponent } from 'obsidian-dev-utils/obsidian/components/console-debug-component';
-import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
+import { ConsoleDebugComponent } from '@mnaoumov/obsidian-lib/components/console-debug-component';
+import { noop } from '@mnaoumov/typescript-lib/function';
+import { castTo } from '@mnaoumov/typescript-lib/object-utils';
+import { waitForAllAsyncOperations } from '@mnaoumov/typescript-test-toolkit/async-operation-tracking';
+import { strictProxy } from '@mnaoumov/typescript-test-toolkit/strict-proxy';
 import {
   App,
   MenuItem
@@ -83,8 +83,6 @@ describe('RootFolderContextMenuComponent', () => {
     capturedLayoutReadyCallback = undefined;
     appMock = App.createConfigured__();
     app = appMock.asOriginalType__();
-
-    seedOnRawTarget(app, 'obsidianDevUtilsState', {});
 
     disablePluginMock = vi.fn().mockResolvedValue(undefined);
     getEnabledPluginByIdMock = vi.fn();

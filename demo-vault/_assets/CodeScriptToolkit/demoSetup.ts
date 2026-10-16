@@ -1,10 +1,9 @@
 import type { App } from 'obsidian';
 
 import { Notice } from 'obsidian';
-import {
-  disableCommunityPlugin,
-  enableCommunityPlugin
-} from 'obsidian-dev-utils/obsidian/community-plugins';
+
+// No library import on purpose: CodeScript Toolkit resolves only obsidian and its own bundled modules inside
+// the vault, so these helpers talk to Obsidian's plugin manager directly.
 
 const PLUGIN_ID = 'root-folder-context-menu';
 const FILLER_FOLDER_PATH = 'Materials/02 Empty area context menu';
@@ -17,7 +16,7 @@ const FILLER_NOTE_COUNT = 8;
  * Manual equivalent: toggle **`Root Folder Context Menu`** off in **Settings -> Community plugins**.
  */
 export async function disablePlugin(app: App): Promise<void> {
-  await disableCommunityPlugin({ app, pluginId: PLUGIN_ID });
+  await app.plugins.disablePluginAndSave(PLUGIN_ID);
   new Notice('Plugin off. Right-click the vault-name row and count the entries.');
 }
 
@@ -27,7 +26,7 @@ export async function disablePlugin(app: App): Promise<void> {
  * Manual equivalent: toggle **`Root Folder Context Menu`** back on in **Settings -> Community plugins**.
  */
 export async function enablePlugin(app: App): Promise<void> {
-  await enableCommunityPlugin({ app, pluginId: PLUGIN_ID });
+  await app.plugins.enablePluginAndSave(PLUGIN_ID);
   new Notice('Plugin on. Right-click the same spot again — the menu is fuller.');
 }
 
