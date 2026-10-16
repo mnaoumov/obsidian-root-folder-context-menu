@@ -1,22 +1,22 @@
+import type { ConsoleDebugComponent } from '@mnaoumov/obsidian-lib/components/console-debug-component';
 import type {
   FileExplorerPlugin,
   FileExplorerView
 } from '@obsidian-typings/obsidian-public-latest';
 import type { App } from 'obsidian';
-import type { ConsoleDebugComponent } from 'obsidian-dev-utils/obsidian/components/console-debug-component';
 
+import { LayoutReadyComponent } from '@mnaoumov/obsidian-lib/components/layout-ready-component';
+import { showErrorAndDisablePlugin } from '@mnaoumov/obsidian-lib/plugin/plugin';
+import {
+  convertAsyncToSync,
+  retryWithTimeout
+} from '@mnaoumov/typescript-lib/async';
 import { InternalPluginName } from '@obsidian-typings/obsidian-public-latest/implementations';
 import {
   Menu,
   MenuItem,
   TAbstractFile
 } from 'obsidian';
-import {
-  convertAsyncToSync,
-  retryWithTimeout
-} from 'obsidian-dev-utils/async';
-import { LayoutReadyComponent } from 'obsidian-dev-utils/obsidian/components/layout-ready-component';
-import { showErrorAndDisablePlugin } from 'obsidian-dev-utils/obsidian/plugin/plugin';
 
 import type { Plugin } from './plugin.ts';
 

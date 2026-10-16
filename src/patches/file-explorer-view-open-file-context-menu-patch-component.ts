@@ -1,8 +1,8 @@
 import type { FileExplorerView } from '@obsidian-typings/obsidian-public-latest';
 
+import { MonkeyAroundComponent } from '@mnaoumov/obsidian-lib/components/monkey-around-component';
+import { getPrototypeOf } from '@mnaoumov/typescript-lib/object-utils';
 import { TFolder } from 'obsidian';
-import { getPrototypeOf } from 'obsidian-dev-utils/object-utils';
-import { MonkeyAroundComponent } from 'obsidian-dev-utils/obsidian/components/monkey-around-component';
 
 export class FileExplorerViewOpenFileContextMenuPatchComponent extends MonkeyAroundComponent {
   public constructor(private readonly fileExplorerView: FileExplorerView) {

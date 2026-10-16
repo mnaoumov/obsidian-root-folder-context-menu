@@ -2,8 +2,8 @@ import type { FileExplorerView } from '@obsidian-typings/obsidian-public-latest'
 import type { TFolder as TFolderType } from 'obsidian';
 import type { MockInstance } from 'vitest';
 
-import { noop } from 'obsidian-dev-utils/function';
-import { castTo } from 'obsidian-dev-utils/object-utils';
+import { noop } from '@mnaoumov/typescript-lib/function';
+import { castTo } from '@mnaoumov/typescript-lib/object-utils';
 import {
   App,
   TFolder
