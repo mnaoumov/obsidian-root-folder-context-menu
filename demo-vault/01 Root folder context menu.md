@@ -6,6 +6,17 @@ In a stock Obsidian vault, right-clicking the **vault root** in the File Explore
 
 ## Try it
 
+The button opens the File Explorer and right-clicks the vault root for you:
+
+```code-button
+---
+caption: Right-click the vault root
+---
+await require('/demoSetup.ts').openRootFolderContextMenu(app);
+```
+
+Manual equivalent:
+
 1. Open the **File Explorer** (the left sidebar; toggle it with the folder icon or `Ctrl/Cmd+Shift+E`).
 2. Find the row at the very bottom showing this vault's name - that is the vault root. On mobile it is at the top of the same drawer.
 3. **Right-click** it (long-press on mobile).
