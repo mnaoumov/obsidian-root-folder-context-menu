@@ -1,4 +1,8 @@
-import type { App } from 'obsidian';
+import type {
+  App,
+  Menu,
+  TAbstractFile
+} from 'obsidian';
 
 import { Notice } from 'obsidian';
 
@@ -8,6 +12,14 @@ import { Notice } from 'obsidian';
 const PLUGIN_ID = 'root-folder-context-menu';
 const FILLER_FOLDER_PATH = 'Materials/02 Empty area context menu';
 const FILLER_NOTE_COUNT = 8;
+const ROOT_MENU_TIMEOUT_IN_MILLISECONDS = 3000;
+
+// The vault-name row the plugin hangs the root menu on, in the order the plugin itself tries them: the
+// vault switcher at the bottom of the desktop sidebar, then the drawer header on mobile.
+const ROOT_ANCHOR_SELECTORS = [
+  '.workspace-drawer-vault-switcher',
+  '.workspace-drawer-header-name'
+];
 
 /**
  * Turns the plugin off, so the reader can right-click the same spot and see what Obsidian offers on
@@ -28,6 +40,72 @@ export async function disablePlugin(app: App): Promise<void> {
 export async function enablePlugin(app: App): Promise<void> {
   await app.plugins.enablePluginAndSave(PLUGIN_ID);
   new Notice('Plugin on. Right-click the same spot again — the menu is fuller.');
+}
+
+/**
+ * Opens the File Explorer and right-clicks the vault root, so the reader sees the menu the plugin gives it.
+ *
+ * Throws unless Obsidian builds the folder menu for the root `/`: that is what the plugin adds, and a
+ * menu of Obsidian's own on the same row does not count.
+ *
+ * Manual equivalent: right-click the vault-name row at the bottom of the File Explorer (long-press the
+ * vault name at the top of the left drawer on mobile).
+ */
+export async function openRootFolderContextMenu(app: App): Promise<void> {
+  if (!app.plugins.enabledPlugins.has(PLUGIN_ID)) {
+    throw new Error('`Root Folder Context Menu` is off. Turn it on first, then try again.');
+  }
+
+  app.workspace.leftSplit.expand();
+  const fileExplorerLeaf = app.workspace.getLeavesOfType('file-explorer')[0];
+  if (fileExplorerLeaf) {
+    await app.workspace.revealLeaf(fileExplorerLeaf);
+  }
+
+  const anchorEl = ROOT_ANCHOR_SELECTORS
+    .map((selector) => activeDocument.querySelector<HTMLElement>(selector))
+    .find((element) => element !== null);
+  if (!anchorEl) {
+    throw new Error('Could not find the vault-name row in the File Explorer.');
+  }
+
+  let resolveRootMenu: (isRootMenu: boolean) => void = () => undefined;
+  const rootMenuPromise = new Promise<boolean>((resolve) => {
+    resolveRootMenu = resolve;
+  });
+  function handleFileMenu(_menu: Menu, file: TAbstractFile): void {
+    if (file.path === '/') {
+      resolveRootMenu(true);
+    }
+  }
+  app.workspace.on('file-menu', handleFileMenu);
+
+  try {
+    // A dispatched right-click is enough here: the file explorer's `contextmenu` path does not check
+    // `event.isTrusted`, and the plugin positions the menu from the event's coordinates.
+    const rect = anchorEl.getBoundingClientRect();
+    anchorEl.dispatchEvent(
+      new MouseEvent('contextmenu', {
+        bubbles: true,
+        button: 2,
+        cancelable: true,
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2
+      })
+    );
+
+    const isRootMenu = await Promise.race([
+      rootMenuPromise,
+      sleep(ROOT_MENU_TIMEOUT_IN_MILLISECONDS).then(() => false)
+    ]);
+    if (!isRootMenu) {
+      throw new Error('The vault root menu did not open.');
+    }
+  } finally {
+    app.workspace.off('file-menu', handleFileMenu);
+  }
+
+  new Notice('This is the vault root menu. Try New note or New folder.');
 }
 
 /**
