@@ -66,7 +66,7 @@ Without `Advanced Debug Mode`, run the following command in the `DevTools Consol
 window.DEBUG.enable('root-folder-context-menu');
 ```
 
-For more details, refer to the [documentation](https://mnaoumov.dev/obsidian-dev-utils/guides/debugging/).
+For more details, refer to the [documentation](https://mnaoumov.dev/obsidian-lib/guides/debugging/).
 
 ## Changelog
 
