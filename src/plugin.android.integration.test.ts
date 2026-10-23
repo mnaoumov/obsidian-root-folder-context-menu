@@ -99,7 +99,7 @@ describe('root context menu on Android', () => {
 
   it('should keep the entries that make no sense for the root off that menu', async () => {
     const filteredTitles = await localizedTitles(FILTERED_ENTRY_KEYS);
-    const folderMenu = await openContextMenuOn(`.nav-folder-title[data-path="${STAGED_FOLDER_PATH}"]`);
+    const folderMenu = await openContextMenuOnDraggable(`.nav-folder-title[data-path="${STAGED_FOLDER_PATH}"]`);
 
     // An ordinary folder's menu carries every one of them, which is what makes
     // their absence from the root's menu mean something rather than being
@@ -294,6 +294,29 @@ async function openContextMenuOn(selector: string): Promise<MenuProbe> {
     input: { selector },
     vaultPath: vaultPath()
   });
+}
+
+/**
+ * Long-presses a DRAGGABLE row until Obsidian's own menu opens, up to a few attempts.
+ *
+ * A long press on a file-list row races Obsidian Mobile's drag recognition: measured on a device, the
+ * press sometimes starts a drag instead (`body.is-grabbing`) and raises no menu at all, so the control
+ * read back an empty list in 3 of 5 full integration runs. The vault-name row and the empty area below
+ * the file list cannot be dragged, which is why only this press needs it. Use it only where a menu is
+ * REQUIRED: retrying a press that is meant to show a menu NOT opening would hide exactly that failure.
+ *
+ * @param selector - The draggable element to long-press.
+ * @returns The first probe that raised a menu, or the last one when none did.
+ */
+async function openContextMenuOnDraggable(selector: string): Promise<MenuProbe> {
+  const MAX_ATTEMPTS = 3;
+
+  let probe = await openContextMenuOn(selector);
+  for (let attempt = 1; attempt < MAX_ATTEMPTS && !probe.hasMenu; attempt++) {
+    probe = await openContextMenuOn(selector);
+  }
+
+  return probe;
 }
 
 /**
