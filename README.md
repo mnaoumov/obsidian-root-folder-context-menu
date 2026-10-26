@@ -42,6 +42,10 @@ A copy of the vault ships with every release. You can access it via any of the f
 
 Entries that make no sense for the vault itself — **Rename**, **Delete**, **Move folder to...**, **Make a copy**, **Search in folder** — are removed. There is nothing to configure.
 
+## Similar plugins
+
+No similar plugin was found when this was last searched for, on 2026-10-26.
+
 ## Installation
 
 The plugin is available in [the official Community Plugins repository](https://community.obsidian.md/plugins/root-folder-context-menu).
