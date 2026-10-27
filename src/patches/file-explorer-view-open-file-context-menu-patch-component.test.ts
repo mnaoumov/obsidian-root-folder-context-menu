@@ -29,7 +29,7 @@ interface LoadPatchResult {
   readonly view: FakeFileExplorerView;
 }
 
-type OpenFileContextMenuSpy = MockInstance<(event: Event, fileItemElement: HTMLElement) => void>;
+type OpenFileContextMenuSpy = MockInstance<($event: Event, fileItemElement: HTMLElement) => void>;
 
 let appMock: App;
 let component: FileExplorerViewOpenFileContextMenuPatchComponent | undefined;
@@ -59,22 +59,22 @@ describe('FileExplorerViewOpenFileContextMenuPatchComponent', () => {
     const { originalSpy, view } = loadPatch();
     const { fileItemElement, parentElement } = createFileItemElements();
     view.files.set(parentElement, { path: 'test.md' });
-    const event = new Event('contextmenu');
+    const $event = new Event('contextmenu');
 
-    castTo<FileExplorerView>(view).openFileContextMenu(event, fileItemElement);
+    castTo<FileExplorerView>(view).openFileContextMenu($event, fileItemElement);
 
-    expect(originalSpy).toHaveBeenCalledWith(event, fileItemElement);
+    expect(originalSpy).toHaveBeenCalledWith($event, fileItemElement);
   });
 
   it('should call the original method directly for non-root folders', () => {
     const { originalSpy, view } = loadPatch();
     const { fileItemElement, parentElement } = createFileItemElements();
     view.files.set(parentElement, TFolder.create__(appMock.vault, 'some-folder'));
-    const event = new Event('contextmenu');
+    const $event = new Event('contextmenu');
 
-    castTo<FileExplorerView>(view).openFileContextMenu(event, fileItemElement);
+    castTo<FileExplorerView>(view).openFileContextMenu($event, fileItemElement);
 
-    expect(originalSpy).toHaveBeenCalledWith(event, fileItemElement);
+    expect(originalSpy).toHaveBeenCalledWith($event, fileItemElement);
   });
 
   it('should temporarily report the root folder as non-root while calling the original method', () => {

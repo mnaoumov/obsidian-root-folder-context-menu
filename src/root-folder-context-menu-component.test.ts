@@ -56,7 +56,7 @@ interface FileExplorerPluginInstanceLike {
 
 interface FileExplorerViewLike {
   readonly files: Map<unknown, unknown>;
-  readonly openFileContextMenu: (event: Event, fileItemElement: HTMLElement) => void;
+  readonly openFileContextMenu: ($event: Event, fileItemElement: HTMLElement) => void;
 }
 
 interface FileLike {
@@ -315,11 +315,11 @@ describe('RootFolderContextMenuComponent', () => {
       vaultSwitcherEl.append(childNode);
       castTo<ComponentPrivate>(component).fileExplorerView = castTo<FileExplorerViewLike>({ openFileContextMenu: openFileContextMenuMock });
 
-      const event = new Event('contextmenu');
-      await castTo<ComponentPrivate>(component).openContextMenu(event, vaultSwitcherEl);
+      const $event = new Event('contextmenu');
+      await castTo<ComponentPrivate>(component).openContextMenu($event, vaultSwitcherEl);
 
       expect(bodyClickSpy).toHaveBeenCalled();
-      expect(openFileContextMenuMock).toHaveBeenCalledWith(event, childNode);
+      expect(openFileContextMenuMock).toHaveBeenCalledWith($event, childNode);
 
       vi.unstubAllGlobals();
       await unloadComponent(component);
