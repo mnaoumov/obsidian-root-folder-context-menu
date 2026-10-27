@@ -20,8 +20,8 @@ import {
 import { FileExplorerViewOpenFileContextMenuPatchComponent } from './file-explorer-view-open-file-context-menu-patch-component.ts';
 
 interface FileItemElements {
-  fileItemElement: HTMLElement;
-  parentElement: HTMLElement;
+  readonly fileItemElement: HTMLElement;
+  readonly parentElement: HTMLElement;
 }
 
 interface LoadPatchResult {
