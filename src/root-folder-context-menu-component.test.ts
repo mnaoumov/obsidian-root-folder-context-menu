@@ -33,39 +33,43 @@ const PLUGIN_NAME = 'Root Folder Context Menu';
 const STRICT_PROXY_TARGET_SYMBOL = Symbol.for('strictProxyTarget');
 
 interface AppGlobal {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Test setup replaces the global app and teardown restores it.
   app: AppType;
 }
 
 interface ComponentPrivate {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests replace the private view to exercise missing-view handling.
   fileExplorerView?: FileExplorerViewLike;
-  handleFileMenuEvent: (menu: Menu, file: FileLike) => void;
-  openContextMenu: ($event: Event, rootAnchorEl: HTMLElement) => Promise<void>;
+  readonly handleFileMenuEvent: (menu: Menu, file: FileLike) => void;
+  readonly openContextMenu: ($event: Event, rootAnchorEl: HTMLElement) => Promise<void>;
 }
 
 interface FileExplorerLeafLike {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests replace deferred loading to simulate initialization failure.
   loadIfDeferred: () => Promise<void>;
-  view: FileExplorerViewLike;
+  readonly view: FileExplorerViewLike;
 }
 
 interface FileExplorerPluginInstanceLike {
-  plugin: FileExplorerPlugin;
+  readonly plugin: FileExplorerPlugin;
 }
 
 interface FileExplorerViewLike {
-  files: Map<unknown, unknown>;
-  openFileContextMenu: (event: Event, fileItemElement: HTMLElement) => void;
+  readonly files: Map<unknown, unknown>;
+  readonly openFileContextMenu: (event: Event, fileItemElement: HTMLElement) => void;
 }
 
 interface FileLike {
-  path: string;
+  readonly path: string;
 }
 
 interface MenuItemWithTitle {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests replace the title element to simulate a menu item without text.
   titleEl: TitleElement;
 }
 
 interface TitleElement {
-  textContent: string;
+  readonly textContent: string;
 }
 
 let app: AppType;

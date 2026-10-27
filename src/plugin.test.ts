@@ -32,15 +32,17 @@ const PLUGIN_ID = 'root-folder-context-menu';
 const STRICT_PROXY_TARGET_SYMBOL = Symbol.for('strictProxyTarget');
 
 interface AppGlobal {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Test setup replaces the global app and teardown restores it.
   app: AppType;
 }
 
 interface LoadedFlagHolder {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests set the mock lifecycle flag so unload performs cleanup.
   loaded__: boolean;
 }
 
 interface ObsidianModule {
-  Component: new () => object;
+  readonly Component: new () => object;
 }
 
 interface RootFolderContextMenuComponentConstructorParams {
