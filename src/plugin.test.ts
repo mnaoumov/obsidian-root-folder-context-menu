@@ -3,7 +3,6 @@ import type {
   PluginManifest
 } from 'obsidian';
 
-import { ConsoleDebugComponent } from '@mnaoumov/obsidian-lib/components/console-debug-component';
 import { castTo } from '@mnaoumov/typescript-lib/object-utils';
 import { App } from 'obsidian-test-mocks/obsidian';
 import {
@@ -47,7 +46,6 @@ interface ObsidianModule {
 
 interface RootFolderContextMenuComponentConstructorParams {
   readonly app: AppType;
-  readonly consoleDebugComponent: ConsoleDebugComponent;
   readonly plugin: Plugin;
 }
 
@@ -79,7 +77,7 @@ describe('Plugin', () => {
     castTo<AppGlobal>(window).app = savedGlobalApp;
   });
 
-  it('should add the root folder context menu component with the app, console debug component, and plugin', async () => {
+  it('should add the root folder context menu component with the app and plugin', async () => {
     const plugin = new Plugin(app, manifest);
     // PluginBase.onload is async; driving it directly runs onloadImpl and eager-loads the child.
     await plugin.onload();
@@ -89,7 +87,6 @@ describe('Plugin', () => {
 
     const params = castTo<RootFolderContextMenuComponentConstructorParams>(calls[0]?.[0]);
     expect(params.app).toBe(plugin.app);
-    expect(params.consoleDebugComponent).toBeInstanceOf(ConsoleDebugComponent);
     expect(params.plugin).toBe(plugin);
 
     castTo<LoadedFlagHolder>(plugin).loaded__ = true;
