@@ -8,7 +8,6 @@ export class Plugin extends PluginBase {
     this.addChild(
       new RootFolderContextMenuComponent({
         app: this.app,
-        consoleDebugComponent: this.consoleDebugComponent,
         plugin: this
       })
     );

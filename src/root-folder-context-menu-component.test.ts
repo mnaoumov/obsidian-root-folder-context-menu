@@ -1,20 +1,11 @@
-import type { FileExplorerPlugin } from '@obsidian-typings/obsidian-public-latest';
-import type {
-  App as AppType,
-  EventRef,
-  Menu,
-  MenuItem as MenuItemType
-} from 'obsidian';
+import type { App as AppType } from 'obsidian';
 
-import { ConsoleDebugComponent } from '@mnaoumov/obsidian-lib/components/console-debug-component';
+import { FileExplorerRootMenuComponent } from '@mnaoumov/obsidian-lib/components/file-explorer-root-menu-component';
 import { noop } from '@mnaoumov/typescript-lib/function';
 import { castTo } from '@mnaoumov/typescript-lib/object-utils';
 import { waitForAllAsyncOperations } from '@mnaoumov/typescript-test-toolkit/async-operation-tracking';
 import { strictProxy } from '@mnaoumov/typescript-test-toolkit/strict-proxy';
-import {
-  App,
-  MenuItem
-} from 'obsidian-test-mocks/obsidian';
+import { App } from 'obsidian-test-mocks/obsidian';
 import {
   afterEach,
   beforeEach,
@@ -28,6 +19,16 @@ import type { Plugin } from './plugin.ts';
 
 import { RootFolderContextMenuComponent } from './root-folder-context-menu-component.ts';
 
+vi.mock('@mnaoumov/obsidian-lib/components/file-explorer-root-menu-component', async () => {
+  const { Component } = await vi.importActual<typeof import('obsidian')>('obsidian');
+  return {
+    // eslint-disable-next-line prefer-arrow-callback -- The stub must be constructable.
+    FileExplorerRootMenuComponent: vi.fn(function sharedMenuStub() {
+      return new Component();
+    })
+  };
+});
+
 const PLUGIN_ID = 'root-folder-context-menu';
 const PLUGIN_NAME = 'Root Folder Context Menu';
 const STRICT_PROXY_TARGET_SYMBOL = Symbol.for('strictProxyTarget');
@@ -37,49 +38,12 @@ interface AppGlobal {
   app: AppType;
 }
 
-interface ComponentPrivate {
-  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests replace the private view to exercise missing-view handling.
-  fileExplorerView?: FileExplorerViewLike;
-  readonly handleFileMenuEvent: (menu: Menu, file: FileLike) => void;
-  readonly openContextMenu: ($event: Event, rootAnchorEl: HTMLElement) => Promise<void>;
-}
-
-interface FileExplorerLeafLike {
-  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests replace deferred loading to simulate initialization failure.
-  loadIfDeferred: () => Promise<void>;
-  readonly view: FileExplorerViewLike;
-}
-
-interface FileExplorerPluginInstanceLike {
-  readonly plugin: FileExplorerPlugin;
-}
-
-interface FileExplorerViewLike {
-  readonly files: Map<unknown, unknown>;
-  readonly openFileContextMenu: ($event: Event, fileItemElement: HTMLElement) => void;
-}
-
-interface FileLike {
-  readonly path: string;
-}
-
-interface MenuItemWithTitle {
-  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests replace the title element to simulate a menu item without text.
-  titleEl: TitleElement;
-}
-
-interface TitleElement {
-  readonly textContent: string;
-}
-
 let app: AppType;
 let appMock: App;
 let savedGlobalApp: AppType;
 let capturedLayoutReadyCallback: (() => void) | undefined;
 let disablePluginMock: ReturnType<typeof vi.fn>;
 let getEnabledPluginByIdMock: ReturnType<typeof vi.fn>;
-let getLeavesOfTypeMock: ReturnType<typeof vi.fn>;
-let workspaceOnMock: ReturnType<typeof vi.fn>;
 
 describe('RootFolderContextMenuComponent', () => {
   beforeEach(() => {
@@ -90,13 +54,9 @@ describe('RootFolderContextMenuComponent', () => {
 
     disablePluginMock = vi.fn().mockResolvedValue(undefined);
     getEnabledPluginByIdMock = vi.fn();
-    getLeavesOfTypeMock = vi.fn().mockReturnValue([]);
-    workspaceOnMock = vi.fn().mockReturnValue(castTo<EventRef>({}));
 
     seedOnRawTarget(app, 'internalPlugins', { getEnabledPluginById: getEnabledPluginByIdMock });
     seedOnRawTarget(app, 'plugins', { disablePlugin: disablePluginMock });
-    seedOnRawTarget(app.workspace, 'getLeavesOfType', getLeavesOfTypeMock);
-    seedOnRawTarget(app.workspace, 'on', workspaceOnMock);
     seedOnRawTarget(app.workspace, 'onLayoutReady', (callback: () => void) => {
       capturedLayoutReadyCallback = callback;
     });
@@ -123,265 +83,26 @@ describe('RootFolderContextMenuComponent', () => {
       expect(disablePluginMock).toHaveBeenCalledWith(PLUGIN_ID);
     });
 
-    it('should disable the plugin when the File Explorer view cannot be initialized', async () => {
-      const leaf = createLeaf();
-      leaf.loadIfDeferred = vi.fn().mockRejectedValue(new Error('boom'));
-      getEnabledPluginByIdMock.mockReturnValue(createFileExplorerPluginInstance());
-      getLeavesOfTypeMock.mockReturnValue([leaf]);
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(noop);
-
-      const component = createLoadedComponent();
-      await fireLayoutReady();
-      await unloadComponent(component);
-
-      expect(consoleErrorSpy).toHaveBeenCalled();
-      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Could not initialize FileExplorerView. Disabling the plugin...'));
-      expect(disablePluginMock).toHaveBeenCalledWith(PLUGIN_ID);
-    });
-
-    it('should patch openFileContextMenu and reload the file explorer when the view is available', async () => {
-      const view = createFileExplorerView();
-      const originalOpenFileContextMenu = view.openFileContextMenu;
-      const leaf = createLeaf(view);
-      const fileExplorerPlugin = createFileExplorerPlugin();
-      getEnabledPluginByIdMock.mockReturnValue({ plugin: fileExplorerPlugin });
-      getLeavesOfTypeMock.mockReturnValue([leaf]);
-
+    it('should request the shared folder presentation and release it on unload', async () => {
+      getEnabledPluginByIdMock.mockReturnValue({});
       const component = createLoadedComponent();
       await fireLayoutReady();
 
-      // The real MonkeyAroundComponent (inside the patch child) replaced the prototype method.
-      expect(view.openFileContextMenu).not.toBe(originalOpenFileContextMenu);
-      expect(fileExplorerPlugin.disable).toHaveBeenCalled();
-      expect(fileExplorerPlugin.enable).toHaveBeenCalled();
-      expect(workspaceOnMock).toHaveBeenCalledWith('file-menu', expect.any(Function));
-
+      const shared = vi.mocked(FileExplorerRootMenuComponent);
+      expect(shared).toHaveBeenCalledWith({ app, handler: noop, shouldPresentRootAsFolder: true });
+      const child = castTo<FileExplorerRootMenuComponent>(shared.mock.results[0]?.value);
+      const unloadSpy = vi.spyOn(child, 'unload');
       await unloadComponent(component);
-    });
-
-    it('should retry initializing the view until a file explorer leaf becomes available', async () => {
-      const view = createFileExplorerView();
-      const originalOpenFileContextMenu = view.openFileContextMenu;
-      const leaf = createLeaf(view);
-      getEnabledPluginByIdMock.mockReturnValue({ plugin: createFileExplorerPlugin() });
-      // The first lookup finds no leaf (operationFn returns false), so retryWithTimeout retries.
-      getLeavesOfTypeMock.mockReturnValueOnce([]).mockReturnValue([leaf]);
-
-      const component = createLoadedComponent();
-      await fireLayoutReady();
-
-      expect(getLeavesOfTypeMock.mock.calls.length).toBeGreaterThan(1);
-      expect(view.openFileContextMenu).not.toBe(originalOpenFileContextMenu);
-
-      await unloadComponent(component);
-    });
-
-    it('should wire the vault switcher and nav files container context menus when present', async () => {
-      const view = createFileExplorerView();
-      const leaf = createLeaf(view);
-      getEnabledPluginByIdMock.mockReturnValue({ plugin: createFileExplorerPlugin() });
-      getLeavesOfTypeMock.mockReturnValue([leaf]);
-
-      const vaultSwitcherEl = appendElement('workspace-drawer-vault-switcher');
-      const navFilesContainerEl = appendElement('nav-files-container');
-
-      const component = createLoadedComponent();
-      await fireLayoutReady();
-
-      expect(view.files.get(vaultSwitcherEl)).toBe(app.vault.getRoot());
-      expect(navFilesContainerEl).toBeInstanceOf(HTMLElement);
-
-      await unloadComponent(component);
-    });
-
-    it('should wire only the vault switcher when the nav files container is absent', async () => {
-      const view = createFileExplorerView();
-      const leaf = createLeaf(view);
-      getEnabledPluginByIdMock.mockReturnValue({ plugin: createFileExplorerPlugin() });
-      getLeavesOfTypeMock.mockReturnValue([leaf]);
-
-      const vaultSwitcherEl = appendElement('workspace-drawer-vault-switcher');
-
-      const component = createLoadedComponent();
-      await fireLayoutReady();
-
-      expect(view.files.get(vaultSwitcherEl)).toBe(app.vault.getRoot());
-
-      await unloadComponent(component);
-    });
-
-    it('should anchor to the mobile drawer header name when the desktop vault switcher is absent', async () => {
-      const view = createFileExplorerView();
-      const leaf = createLeaf(view);
-      getEnabledPluginByIdMock.mockReturnValue({ plugin: createFileExplorerPlugin() });
-      getLeavesOfTypeMock.mockReturnValue([leaf]);
-
-      // Obsidian builds the vault switcher only on desktop; on mobile only this header element exists.
-      const drawerHeaderNameEl = appendElement('workspace-drawer-header-name');
-
-      const component = createLoadedComponent();
-      await fireLayoutReady();
-
-      expect(view.files.get(drawerHeaderNameEl)).toBe(app.vault.getRoot());
-
-      await unloadComponent(component);
-    });
-
-    it('should prefer the desktop vault switcher when both anchors are present', async () => {
-      const view = createFileExplorerView();
-      const leaf = createLeaf(view);
-      getEnabledPluginByIdMock.mockReturnValue({ plugin: createFileExplorerPlugin() });
-      getLeavesOfTypeMock.mockReturnValue([leaf]);
-
-      const drawerHeaderNameEl = appendElement('workspace-drawer-header-name');
-      const vaultSwitcherEl = appendElement('workspace-drawer-vault-switcher');
-
-      const component = createLoadedComponent();
-      await fireLayoutReady();
-
-      expect(view.files.get(vaultSwitcherEl)).toBe(app.vault.getRoot());
-      expect(view.files.has(drawerHeaderNameEl)).toBe(false);
-
-      await unloadComponent(component);
-    });
-
-    it('should wire no context menu when no anchor element is present', async () => {
-      const view = createFileExplorerView();
-      const leaf = createLeaf(view);
-      getEnabledPluginByIdMock.mockReturnValue({ plugin: createFileExplorerPlugin() });
-      getLeavesOfTypeMock.mockReturnValue([leaf]);
-
-      appendElement('nav-files-container');
-
-      const component = createLoadedComponent();
-      await fireLayoutReady();
-
-      expect(view.files.size).toBe(0);
-
-      await unloadComponent(component);
-    });
-  });
-
-  describe('handleFileMenuEvent', () => {
-    it('should not filter menu items for non-root files', async () => {
-      const component = createLoadedComponent();
-      const item = createMenuItem('Some action');
-      const menu = castTo<Menu>({ items: [item] });
-
-      castTo<ComponentPrivate>(component).handleFileMenuEvent(menu, { path: 'some/path' });
-
-      expect(menu.items).toHaveLength(1);
-      await unloadComponent(component);
-    });
-
-    it('should filter root-specific menu items for the root folder', async () => {
-      stubI18Next();
-      const component = createLoadedComponent();
-      const rootItem = createMenuItem('translated-plugins.file-explorer.menu-opt-rename');
-      const otherItem = createMenuItem('Some other action');
-      const menu = castTo<Menu>({ items: [rootItem, otherItem] });
-
-      castTo<ComponentPrivate>(component).handleFileMenuEvent(menu, { path: '/' });
-
-      expect(menu.items).toHaveLength(1);
-      expect(menu.items[0]).toBe(otherItem);
-      vi.unstubAllGlobals();
-      await unloadComponent(component);
-    });
-
-    it('should keep non-MenuItem entries in the menu for the root folder', async () => {
-      stubI18Next();
-      const component = createLoadedComponent();
-      const nonMenuItemEntry = castTo<MenuItemType>({ titleEl: { textContent: 'translated-plugins.file-explorer.menu-opt-rename' } });
-      const menu = castTo<Menu>({ items: [nonMenuItemEntry] });
-
-      castTo<ComponentPrivate>(component).handleFileMenuEvent(menu, { path: '/' });
-
-      expect(menu.items).toHaveLength(1);
-      vi.unstubAllGlobals();
-      await unloadComponent(component);
-    });
-  });
-
-  describe('openContextMenu', () => {
-    it('should click the body and open the context menu after the delay', async () => {
-      vi.stubGlobal('sleep', vi.fn().mockResolvedValue(undefined));
-      const bodyClickSpy = vi.spyOn(activeDocument.body, 'click');
-      const component = createLoadedComponent();
-
-      const openFileContextMenuMock = vi.fn();
-      const childNode = activeWindow.createSpan();
-      const vaultSwitcherEl = activeWindow.createDiv();
-      vaultSwitcherEl.append(childNode);
-      castTo<ComponentPrivate>(component).fileExplorerView = castTo<FileExplorerViewLike>({ openFileContextMenu: openFileContextMenuMock });
-
-      const $event = new Event('contextmenu');
-      await castTo<ComponentPrivate>(component).openContextMenu($event, vaultSwitcherEl);
-
-      expect(bodyClickSpy).toHaveBeenCalled();
-      expect(openFileContextMenuMock).toHaveBeenCalledWith($event, childNode);
-
-      vi.unstubAllGlobals();
-      await unloadComponent(component);
+      expect(unloadSpy).toHaveBeenCalledOnce();
     });
   });
 });
 
-function appendElement(className: string): HTMLElement {
-  const element = activeWindow.createDiv();
-  element.className = className;
-  activeDocument.body.append(element);
-  return element;
-}
-
-function createFileExplorerPlugin(): FileExplorerPlugin {
-  return castTo<FileExplorerPlugin>({
-    disable: vi.fn(),
-    enable: vi.fn().mockResolvedValue(undefined)
-  });
-}
-
-function createFileExplorerPluginInstance(): FileExplorerPluginInstanceLike {
-  return { plugin: createFileExplorerPlugin() };
-}
-
-function createFileExplorerView(): FileExplorerViewLike {
-  // A dedicated class gives the view its own prototype.
-  // The real MonkeyAroundComponent then patches that prototype instead of Object.prototype.
-  class FakeFileExplorerView {
-    public files = new Map();
-    public openFileContextMenu(_event: Event, _fileItemElement: HTMLElement): void {
-      noop();
-    }
-  }
-  return new FakeFileExplorerView();
-}
-
-function createLeaf(view = createFileExplorerView()): FileExplorerLeafLike {
-  return {
-    loadIfDeferred: vi.fn().mockResolvedValue(undefined),
-    view
-  };
-}
-
 function createLoadedComponent(): RootFolderContextMenuComponent {
-  const consoleDebugComponent = new ConsoleDebugComponent(PLUGIN_ID);
-  const component = new RootFolderContextMenuComponent({
-    app,
-    consoleDebugComponent,
-    plugin: createPluginMock()
-  });
-  // The real Component.load() flips loaded__/_loaded and runs onload(), which registers the layout-ready handler.
+  const component = new RootFolderContextMenuComponent({ app, plugin: createPluginMock() });
   component.load();
   return component;
 }
-
-function createMenuItem(textContent: string): MenuItemType {
-  const item = castTo<MenuItemWithTitle>(MenuItem.create__(castTo<Menu>({})));
-  item.titleEl = { textContent };
-  return castTo<MenuItemType>(item);
-}
-
 function createPluginMock(): Plugin {
   return strictProxy<Plugin>({
     app,
@@ -406,16 +127,8 @@ function seedOnRawTarget(strictProxiedObject: object, key: string, value: unknow
 async function settleAsyncOperations(): Promise<void> {
   // The LayoutReadyComponent guard (window.setTimeout(0)) is a plain timer, so let it fire to schedule onLayoutReady via the real invokeAsyncSafely.
   await sleep(0);
-  // Async-operation tracking then drains the tracked onLayoutReady promise (including its internal retryWithTimeout retries) deterministically.
+  // Async-operation tracking then drains the tracked onLayoutReady promise (and its child installation) deterministically.
   await waitForAllAsyncOperations();
-}
-
-function stubI18Next(): void {
-  vi.stubGlobal('activeWindow', {
-    i18next: {
-      t: (key: string): string => `translated-${key}`
-    }
-  });
 }
 
 async function unloadComponent(component: RootFolderContextMenuComponent): Promise<void> {
