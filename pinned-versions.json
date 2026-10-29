@@ -29,12 +29,6 @@
       "expect": "^7.0.3",
       "manualCheck": "The check reads the range @wdio/utils declares, not a version, because that range is what forces the override. When it moves to ^8 or later the override and this entry can both go. Before lifting it, re-run the deepmergeCustom probe rather than trusting the range alone: @wdio/config passes a handler that reads `meta.key`, and that is precisely the API 8.0.0 renamed, so a regression there would be silent rather than a crash."
     },
-    "typescript": {
-      "section": "overrides",
-      "why": "TypeScript 7 (tsgo) breaks this toolchain: @typescript-eslint's parser crashes on the native API, so type-aware ESLint cannot run on 7. @typescript-eslint peer-requires the range below, so 6.x is the last usable major. Hold until @mnaoumov/typescript-dev-toolkit migrates.",
-      "check": "node -e \"process.stdout.write(require('typescript-eslint/package.json').peerDependencies.typescript)\"",
-      "expect": ">=4.8.4 <6.1.0"
-    },
     "katex": {
       "check": "node -e \"const fs=require('node:fs');process.stdout.write(JSON.parse(fs.readFileSync('node_modules/micromark-extension-math/package.json','utf8')).dependencies.katex)\"",
       "expect": "^0.16.0",
@@ -48,6 +42,19 @@
       "manualCheck": "The check reads the moment pin of the obsidian copy eslint-plugin-obsidianmd brings, which is what makes the override necessary. When eslint-plugin-obsidianmd moves to an obsidian that pins moment 2.31.0 or later, delete the override and this entry.",
       "section": "overrides",
       "why": "Clears GHSA-4p3w-j4w9-5jqw (moment path traversal via a crafted non-string locale name, 2.29.2 - 2.30.1), patched in 2.31.0. Reached only through @mnaoumov/obsidian-dev-toolkit -> eslint-plugin-obsidianmd -> obsidian 1.12.3, which EXACT-pins moment 2.29.4; eslint-plugin-obsidianmd is on its newest release, so no direct bump gets there. That copy is loaded only by the lint rules, never shipped: at runtime the plugin gets `moment` from Obsidian itself. Never take the `npm audit fix --force` remedy: it downgrades @mnaoumov/obsidian-dev-toolkit."
+    },
+    "re2js": {
+      "section": "overrides",
+      "why": "Clears GHSA-gg6h-894w-4m9c (RE2JS quadratic-time denial of service in lookbehind matching, >=2.2.0 <2.8.7). Reached only through markdownlint, whose newest release 0.42.0 pins re2js at the exact 2.8.6, and markdownlint-cli2 0.24.0 pins that markdownlint exactly in turn, so no bump reaches the fix. 2.9.1 is the version markdownlint itself moved to upstream, so the forced minor is the one it is tested against. NEVER take the `npm audit fix --force` remedy: it downgrades the toolkit packages.",
+      "check": "node -e \"const fs=require('node:fs');process.stdout.write(JSON.parse(fs.readFileSync('node_modules/markdownlint/package.json','utf8')).dependencies.re2js)\"",
+      "expect": "2.8.6",
+      "manualCheck": "The check reads the exact re2js pin of the installed markdownlint, which moves only when a markdownlint-cli2 release pins a newer markdownlint. When it reads 2.8.7 or later, drop the override and this entry and re-run `npm audit`."
+    },
+    "typescript": {
+      "section": "overrides",
+      "why": "TypeScript 7 (tsgo) breaks this toolchain: @typescript-eslint's parser crashes on the native API, so type-aware ESLint cannot run on 7. @typescript-eslint peer-requires the range below, so 6.x is the last usable major. Hold until @mnaoumov/typescript-dev-toolkit migrates.",
+      "check": "node -e \"process.stdout.write(require('typescript-eslint/package.json').peerDependencies.typescript)\"",
+      "expect": ">=4.8.4 <6.1.0"
     }
   }
 }
