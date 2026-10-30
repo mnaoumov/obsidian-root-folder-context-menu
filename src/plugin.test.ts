@@ -93,12 +93,13 @@ describe('Plugin', () => {
     plugin.unload();
   });
 
-  it('should register the open demo vault command', async () => {
+  it('should register the report bug and open demo vault commands', async () => {
     const plugin = new Plugin(app, manifest);
     const addCommandSpy = vi.spyOn(plugin, 'addCommand');
     // PluginBase.onload is async; driving it directly runs onloadImpl and registers the command handlers.
     await plugin.onload();
 
+    expect(addCommandSpy).toHaveBeenCalledWith(expect.objectContaining({ id: 'report-bug' }));
     expect(addCommandSpy).toHaveBeenCalledWith(expect.objectContaining({ id: 'open-demo-vault' }));
 
     castTo<LoadedFlagHolder>(plugin).loaded__ = true;
