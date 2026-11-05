@@ -7,10 +7,10 @@
 - docs: add issue-filing instructions for AI agents
 - chore(github): give the bug form the field ids bug-report links prefill
 - build(deps): override re2js to ^2.9.1 for GHSA-gg6h-894w-4m9c
-- build(deps): bump typescript-dev-toolkit to ^5.2.0
-- build(deps): bump obsidian-integration-testing to ^17.7.2
+- build(deps): bump `typescript-dev-toolkit` to ^5.2.0
+- build(deps): bump `obsidian-integration-testing` to ^17.7.2
 - build(deps): bump @mnaoumov/typescript-dev-toolkit to ^5.1.0
-- refactor: use the shared vault root context menu component from obsidian-lib
+- refactor: use the shared vault root context menu component from `obsidian-lib`
 - chore(deps): update vulnerable development dependencies
 - chore: adopt shared keyword identifier rule
 - chore: adopt readonly interface members
@@ -20,9 +20,9 @@
 ## 1.4.53
 
 - test(android): merge retrying the folder control press that Obsidian Mobile reads as a drag
-- build(deps): move to obsidian-lib 6 and obsidian-dev-toolkit 5
+- build(deps): move to `obsidian-lib` 6 and `obsidian-dev-toolkit` 5
 - docs: shorten the debugging section
-- chore: replace leftover obsidian-dev-utils references with @mnaoumov/obsidian-lib
+- chore: replace leftover `obsidian-dev-utils` references with @mnaoumov/obsidian-lib
 - docs(readme): lead the Debugging section with `Advanced Debug Mode`
 - build(deps): float brace-expansion, sharp and fast-uri past their advisories
 - docs: mark plugin names as code
@@ -32,19 +32,19 @@
 
 ## 1.4.52
 
-- build(deps): merge moving off obsidian-dev-utils onto the @mnaoumov packages
+- build(deps): merge moving off `obsidian-dev-utils` onto the @mnaoumov packages
 - docs: merge marking plugin names as code in markdown and comments
-- test: merge using the obsidian-typings declarations of Obsidian internals
+- test: merge using the `obsidian-typings` declarations of Obsidian internals
 
 ## 1.4.51
 
 - test(screenshots): merge the move onto applyObsidianTheme
-- build(deps): merge the obsidian-integration-testing 17 float
-- chore(deps): merge the obsidian-test-mocks 7 float
+- build(deps): merge the `obsidian-integration-testing` 17 float
+- chore(deps): merge the `obsidian-test-mocks` 7 float
 - fix(test): merge the headless demo-vault toolkit install
 - fix(deps): restore the lockfile's missing resolved and integrity fields
 - fix(deps): float devalue to 5.9.4, clearing GHSA-9rgm-9g3h-6x36
-- build(markdownlint): forbid hard-wrapped markdown paragraphs
+- build(`markdownlint`): forbid hard-wrapped markdown paragraphs
 - chore(deps): drop the two dead dedupe overrides
 - chore(deps): drop the dead markdown-it override
 - chore(deps): drop the dead js-yaml override
@@ -52,20 +52,20 @@
 - docs: drop the rule-id citations from the pin table
 - docs: name the library and the sibling plugins so a reader can resolve them
 - docs: replace the private tracker references with what they pointed at
-- chore(deps): move to obsidian-dev-utils 103
+- chore(deps): move to `obsidian-dev-utils` 103
 - refactor(android): drive the context menu and its dismissal with trusted input
-- chore: adopt the npm run gate branch gate
+- chore: adopt the `npm run gate` branch gate
 - docs: say where the debug command is run
 - test: bring the in-closure wait ceiling under the transport's per-eval cap
 - docs: name the unversioned demo-vault asset and the folder it unzips into
 - chore: make the LICENSE copyright line checkable by the linter and guard it against the year roll-over
-- fix(deps): move to obsidian-integration-testing 12 and obsidian-dev-utils 101
+- fix(deps): move to `obsidian-integration-testing` 12 and `obsidian-dev-utils` 101
 - fix(build): wire build:compile to buildCompile and drop the duplicate leaf script
 
 ## 1.4.50
 
 - chore(deps): sweep caret-ranged dependencies to latest
-- fix(deps): move to obsidian-integration-testing 11 and obsidian-dev-utils 96.5.2
+- fix(deps): move to `obsidian-integration-testing` 11 and `obsidian-dev-utils` 96.5.2
 - fix(deps): drop the brace-expansion file: override that breaks a clean install
 - docs: point plugin-directory links at community.obsidian.md
 
@@ -75,14 +75,14 @@
 
 ## 1.4.48
 
-- docs(readme): render the same in Obsidian's plugin page as on GitHub
+- docs(readme): render the same in Obsidian's plugin page as on `GitHub`
 - chore: update libs
-- chore: update obsidian-dev-utils to 94.6.1
-- chore: update obsidian-dev-utils to 94.6.0
+- chore: update `obsidian-dev-utils` to 94.6.1
+- chore: update `obsidian-dev-utils` to 94.6.0
 - fix: override deepmerge-ts to clear GHSA-ggr8-5vv4-36mx
 - test: gate the demo vault by clicking every code button
 - test: gate the demo vault by clicking every code button
-- chore: teach cspell the advisory wording
+- chore: teach `cspell` the advisory wording
 - chore: update libs
 - docs: capture the mobile screenshot set for root-folder-context-menu
 - test: prove the root context menu on a real phone and desktop
@@ -97,14 +97,14 @@
 
 ## 1.4.46
 
-- chore: update libs and adopt obsidian-integration-testing 10
+- chore: update libs and adopt `obsidian-integration-testing` 10
 
 ## 1.4.45
 
 - chore: update libs
 - chore: update libs
-- chore(vitest): adopt the shared Obsidian plugin vitest configuration
-- chore: update libs and clear the npm audit
+- chore(`vitest`): adopt the shared Obsidian plugin `vitest` configuration
+- chore: update libs and clear the `npm` audit
 - docs: fix the demo vault download instructions
 
 ## 1.4.44
@@ -125,7 +125,7 @@
 ## 1.4.41
 
 - docs: standardize demo-vault README
-- docs: drop per-plugin demo-vault setup notes (bootstrap covered by the obsidian-dev-utils harness)
+- docs: drop per-plugin demo-vault setup notes (bootstrap covered by the `obsidian-dev-utils` harness)
 - docs(demo-vault): create the `Root Folder Context Menu` demo vault
 - chore: update libs
 - docs: update
@@ -134,7 +134,7 @@
 ## 1.4.40
 
 - chore: update libs
-- chore: update obsidian-dev-utils to 85.0.0
+- chore: update `obsidian-dev-utils` to 85.0.0
 - build: lock typescript to 6.0.3
 - test: wire integration-testing vitest-setup into integration projects
 - chore: update libs
@@ -176,7 +176,7 @@
 
 - chore: update libs
 - chore: lint
-- chore: enable markdownlint
+- chore: enable `markdownlint`
 
 ## 1.4.30
 
@@ -340,7 +340,7 @@
 ## 1.2.2
 
 - Restore override
-- Use node types and namespaces
+- Use `node` types and namespaces
 
 ## 1.2.1
 

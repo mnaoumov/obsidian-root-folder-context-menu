@@ -27,7 +27,7 @@ This plugin gives both spots the same context menu any other folder gets, minus 
 
 **The documentation is a demo vault.** Each feature has a note that explains what it does and why you would want it, with a sample folder to create things next to.
 
-**[Start reading here](<./demo-vault/00 Start.md>)** — it is plain markdown, so it works on GitHub with nothing installed.
+**[Start reading here](<./demo-vault/00 Start.md>)** — it is plain markdown, so it works on `GitHub` with nothing installed.
 
 A copy of the vault ships with every release. You can access it via any of the following:
 

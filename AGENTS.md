@@ -38,6 +38,6 @@ Filing from the CLI or the API (`gh issue create --body`, or an AI agent filing 
 - **`src/`** — plugin source:
   - `main.ts` — Obsidian entry point (default export of `Plugin`).
   - `plugin.ts` — `Plugin` extends `PluginBase`; its `onloadImpl` adds the `RootFolderContextMenuComponent` child.
-  - `root-folder-context-menu-component.ts` — `LayoutReadyComponent` that disables this plugin if File Explorer is off, then subscribes to obsidian-lib's `FileExplorerRootMenuComponent` with `shouldPresentRootAsFolder: true`. The shared component owns menu interception, unsafe-root-item filtering and cross-plugin installation sharing; no File Explorer reload is needed.
+  - `root-folder-context-menu-component.ts` — `LayoutReadyComponent` that disables this plugin if File Explorer is off, then subscribes to `obsidian-lib`'s `FileExplorerRootMenuComponent` with `shouldPresentRootAsFolder: true`. The shared component owns menu interception, unsafe-root-item filtering and cross-plugin installation sharing; no File Explorer reload is needed.
     - **The root anchor is per-platform** — the shared component handles `.workspace-drawer-vault-switcher` on desktop and `.workspace-drawer-header-name` on mobile, plus the empty area below the file list. Both platforms have end-to-end suites in `plugin.desktop.integration.test.ts` / `plugin.android.integration.test.ts`.
-- **`main` field** points to `src/main.ts` (Obsidian plugin source entry; built artifact is `dist/build/main.js`, not published to npm).
+- **`main` field** points to `src/main.ts` (Obsidian plugin source entry; built artifact is `dist/build/main.js`, not published to `npm`).
