@@ -46,7 +46,7 @@ Entries that make no sense for the vault itself — **Rename**, **Delete**, **Mo
 
 [My other Obsidian resources](https://mnaoumov.dev/obsidian/)
 
-No similar plugin was found when this was last searched for, on 2026-10-26.
+No similar plugin was found when this was last searched for, on 2026-11-21.
 
 ## Installation
 
