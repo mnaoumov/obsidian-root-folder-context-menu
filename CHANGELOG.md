@@ -386,7 +386,7 @@ This release has 1 other change.
 
 ## 1.2.4
 
-- Disable plugin with notifications
+- When File Explorer is disabled, or its view cannot be patched, the plugin now shows a notice and disables itself instead of failing with an error.
 
 ## 1.2.3
 
@@ -424,7 +424,7 @@ This release has 2 other changes.
 
 ## 1.1.0
 
-- Minor changes
+- Right-clicking the vault name at the bottom of the left sidebar now opens the root folder's context menu.
 
 ## 1.0.3
 
