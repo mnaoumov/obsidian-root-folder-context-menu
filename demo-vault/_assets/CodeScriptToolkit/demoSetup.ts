@@ -1,18 +1,22 @@
 import type {
   App,
+  EventRef,
   Menu,
   TAbstractFile
 } from 'obsidian';
 
 import { Notice } from 'obsidian';
 
-// No library import on purpose: CodeScript Toolkit resolves only obsidian and its own bundled modules inside
+// No library import on purpose: `CodeScript Toolkit` resolves only obsidian and its own bundled modules inside
 // the vault, so these helpers talk to Obsidian's plugin manager directly.
 
 const PLUGIN_ID = 'root-folder-context-menu';
 const FILLER_FOLDER_PATH = 'Materials/02 Empty area context menu';
 const FILLER_NOTE_COUNT = 8;
+const FILLER_NOTE_NUMBER_WIDTH = 2;
 const ROOT_MENU_TIMEOUT_IN_MILLISECONDS = 3000;
+const RIGHT_MOUSE_BUTTON = 2;
+const HALF = 2;
 
 // The vault-name row the plugin hangs the root menu on, in the order the plugin itself tries them: the
 // vault switcher at the bottom of the desktop sidebar, then the drawer header on mobile.
@@ -43,6 +47,29 @@ export async function enablePlugin(app: App): Promise<void> {
 }
 
 /**
+ * Creates enough notes to push the file list past the height of the pane.
+ *
+ * `02 Empty area context menu.md` needs blank space below the last file to right-click, and a vault
+ * this small does not have any — the note used to just tell the reader to go and make some.
+ *
+ * Manual equivalent: create any handful of notes until the file list fills the pane.
+ */
+export async function fillFileList(app: App): Promise<void> {
+  if (!await app.vault.adapter.exists(FILLER_FOLDER_PATH)) {
+    await app.vault.createFolder(FILLER_FOLDER_PATH);
+  }
+
+  for (let index = 1; index <= FILLER_NOTE_COUNT; index++) {
+    const path = `${FILLER_FOLDER_PATH}/Filler ${String(index).padStart(FILLER_NOTE_NUMBER_WIDTH, '0')}.md`;
+    if (!app.vault.getFileByPath(path)) {
+      await app.vault.create(path, `# Filler ${String(index)}\n\nHere only to give the file list some height.\n`);
+    }
+  }
+
+  new Notice(`Created ${String(FILLER_NOTE_COUNT)} filler notes. Scroll the File Explorer to the bottom.`);
+}
+
+/**
  * Opens the File Explorer and right-clicks the vault root, so the reader sees the menu the plugin gives it.
  *
  * Throws unless Obsidian builds the folder menu for the root `/`: that is what the plugin adds, and a
@@ -69,16 +96,16 @@ export async function openRootFolderContextMenu(app: App): Promise<void> {
     throw new Error('Could not find the vault-name row in the File Explorer.');
   }
 
-  let resolveRootMenu: (isRootMenu: boolean) => void = () => undefined;
+  // The promise executor runs synchronously, so the handler is registered before the right-click below.
+  const fileMenuEventRefs: EventRef[] = [];
   const rootMenuPromise = new Promise<boolean>((resolve) => {
-    resolveRootMenu = resolve;
-  });
-  function handleFileMenu(_menu: Menu, file: TAbstractFile): void {
-    if (file.path === '/') {
-      resolveRootMenu(true);
+    function handleFileMenu(_menu: Menu, file: TAbstractFile): void {
+      if (file.path === '/') {
+        resolve(true);
+      }
     }
-  }
-  app.workspace.on('file-menu', handleFileMenu);
+    fileMenuEventRefs.push(app.workspace.on('file-menu', handleFileMenu));
+  });
 
   try {
     // A dispatched right-click is enough here: the file explorer's `contextmenu` path does not check
@@ -87,10 +114,10 @@ export async function openRootFolderContextMenu(app: App): Promise<void> {
     anchorEl.dispatchEvent(
       new MouseEvent('contextmenu', {
         bubbles: true,
-        button: 2,
+        button: RIGHT_MOUSE_BUTTON,
         cancelable: true,
-        clientX: rect.left + rect.width / 2,
-        clientY: rect.top + rect.height / 2
+        clientX: rect.left + rect.width / HALF,
+        clientY: rect.top + rect.height / HALF
       })
     );
 
@@ -102,33 +129,12 @@ export async function openRootFolderContextMenu(app: App): Promise<void> {
       throw new Error('The vault root menu did not open.');
     }
   } finally {
-    app.workspace.off('file-menu', handleFileMenu);
-  }
-
-  new Notice('This is the vault root menu. Try New note or New folder.');
-}
-
-/**
- * Creates enough notes to push the file list past the height of the pane.
- *
- * `02 Empty area context menu.md` needs blank space below the last file to right-click, and a vault
- * this small does not have any — the note used to just tell the reader to go and make some.
- *
- * Manual equivalent: create any handful of notes until the file list fills the pane.
- */
-export async function fillFileList(app: App): Promise<void> {
-  if (!await app.vault.adapter.exists(FILLER_FOLDER_PATH)) {
-    await app.vault.createFolder(FILLER_FOLDER_PATH);
-  }
-
-  for (let index = 1; index <= FILLER_NOTE_COUNT; index++) {
-    const path = `${FILLER_FOLDER_PATH}/Filler ${String(index).padStart(2, '0')}.md`;
-    if (!app.vault.getFileByPath(path)) {
-      await app.vault.create(path, `# Filler ${String(index)}\n\nHere only to give the file list some height.\n`);
+    for (const fileMenuEventRef of fileMenuEventRefs) {
+      app.workspace.offref(fileMenuEventRef);
     }
   }
 
-  new Notice(`Created ${String(FILLER_NOTE_COUNT)} filler notes. Scroll the File Explorer to the bottom.`);
+  new Notice('This is the vault root menu. Try New note or New folder.');
 }
 
 /**
